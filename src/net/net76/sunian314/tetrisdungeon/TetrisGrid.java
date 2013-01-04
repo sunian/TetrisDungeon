@@ -156,7 +156,7 @@ public class TetrisGrid {
 				for (int j = 0; j < 10; j++) {
 					blockGrid[i][j] = null;
 				}
-				Gremlin gremlin = MainActivity.gameCanvasView.gremlin;
+				Prisoner gremlin = MainActivity.gameCanvasView.prisoner;
 				Rect gremlinBounds = gremlin.myBounds;
 				if (gremlinBounds.top > GameCanvasView.blockSize * (19 - i) && gremlinBounds.bottom < GameCanvasView.blockSize * (20 - i)){
 					gremlin.kill();

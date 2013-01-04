@@ -5,7 +5,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import net.net76.sunian314.tetrisdungeon.R;
 
-public class Gremlin {
+public class Prisoner {
 	double xPos, yPos, xVel=0, yVel=0, grav = 1, runVel=1, walkVel=1, jumpVel=2;
 	double lastX, lastY, newX, newY;
 	Paint myPaint;
@@ -17,7 +17,7 @@ public class Gremlin {
 	TetrisBlock myBlock;
 	boolean inRightHand = false;
 	
-	public Gremlin(int screenW, int screenH, TetrisGrid tetrisGrid){
+	public Prisoner(int screenW, int screenH, TetrisGrid tetrisGrid){
 //		System.out.println(screenW + "x" + screenH);
 		width = screenW;
 		height = screenH;

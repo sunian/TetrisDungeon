@@ -69,7 +69,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 		gameCanvasView = (GameCanvasView) findViewById(R.id.gameCanvasView1);
 		tetrisGridView = (TetrisGridView)findViewById(R.id.tetrisGridView1);
 		
-		gameCanvasView.setOnTouchListener(new GremlinControls(gameCanvasView));
+		gameCanvasView.setOnTouchListener(new PrisonerControls(gameCanvasView));
 		gameCanvasView.startGame();
 	}
 

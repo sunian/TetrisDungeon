@@ -16,7 +16,7 @@ public class GameCanvasView extends View {
 	int myWidth, myHeight;
 	static int blockSize;
 	static int transX, transY;
-	Gremlin gremlin;
+	Prisoner prisoner;
 	TetrisGrid grid;
 	static Paint defaultPaint = new Paint(), gameBorderPaint = new Paint(), skyPaint = new Paint();
 	static Paint platformPaint = new Paint(), wallPaint = new Paint();
@@ -66,7 +66,7 @@ public class GameCanvasView extends View {
 		blockSize = myWidth/10;
 		initializePaints();
 		grid = new TetrisGrid(myWidth, myHeight);
-		gremlin = new Gremlin(myWidth, myHeight, grid);
+		prisoner = new Prisoner(myWidth, myHeight, grid);
 
 		gameBorder.moveTo(0, myHeight);
 		gameBorder.lineTo(0, 0);
@@ -111,12 +111,12 @@ public class GameCanvasView extends View {
 //		printElapsed();
 		canvas.drawPath(gameBorder, gameBorderPaint);
 		if (grid.complete) canvas.drawRect(1, 0 - transY - 5, myWidth - 1, 0, skyPaint);
-		if (gremlin != null && gremlin.isAlive()){
-			canvas.drawRect(gremlin.myBounds, gremlin.myPaint);
-			if (gremlin.myBlock != null){
-				int blockX = (gremlin.myBlock.myBounds.left + gremlin.myBlock.myBounds.right)/2;
-				int blockY = (gremlin.myBlock.myBounds.top + gremlin.myBlock.myBounds.bottom)/2;
-				canvas.drawLine(gremlin.inRightHand ? gremlin.myBounds.right : gremlin.myBounds.left, (gremlin.myBounds.top + gremlin.myBounds.bottom)/2, blockX, blockY, defaultPaint);
+		if (prisoner != null && prisoner.isAlive()){
+			canvas.drawRect(prisoner.myBounds, prisoner.myPaint);
+			if (prisoner.myBlock != null){
+				int blockX = (prisoner.myBlock.myBounds.left + prisoner.myBlock.myBounds.right)/2;
+				int blockY = (prisoner.myBlock.myBounds.top + prisoner.myBlock.myBounds.bottom)/2;
+				canvas.drawLine(prisoner.inRightHand ? prisoner.myBounds.right : prisoner.myBounds.left, (prisoner.myBounds.top + prisoner.myBounds.bottom)/2, blockX, blockY, defaultPaint);
 				canvas.drawCircle(blockX, blockY, blockSize/5, defaultPaint);
 			}
 		}

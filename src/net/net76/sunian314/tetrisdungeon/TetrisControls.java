@@ -42,7 +42,7 @@ public class TetrisControls implements OnTouchListener {
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			gameCanvasView.gremlin.stop();
+			gameCanvasView.prisoner.stop();
 			break;
 		default:
 			System.out.println("touch action " + event.getAction());

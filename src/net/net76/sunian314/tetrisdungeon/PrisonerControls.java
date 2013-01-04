@@ -5,19 +5,19 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import net.net76.sunian314.tetrisdungeon.R;
 
-public class GremlinControls implements OnTouchListener {
-	Thread gremlinPhysicsThread, tetrisThread;
+public class PrisonerControls implements OnTouchListener {
+	Thread prisonerPhysicsThread, tetrisThread;
 	GameCanvasView gameCanvasView;
 	float xDown, yDown;
 	boolean isTap = false;
 	long tDown;
 	
-	public GremlinControls(GameCanvasView v){
+	public PrisonerControls(GameCanvasView v){
 		gameCanvasView = v;
 //		TetrisPiece.createChecklist();
 //		TetrisPiece.createFallOrders();
 		TetrisPiece.createRotationOffsets();
-		createGremlinPhysics();
+		createPrisonerPhysics();
 		createTicker();
 	}
 	private void setDownHere(MotionEvent event){
@@ -38,11 +38,11 @@ public class GremlinControls implements OnTouchListener {
 			float dx= event.getX() - xDown, dy= event.getY() - yDown;
 			long dt = event.getEventTime() - tDown;
 			if ((dx*dx > swipeLength * swipeLength) || (dy*dy > swipeLength * swipeLength)){
-				if (gameCanvasView.gremlin.isAlive()){
-					if (dx > swipeLength) gameCanvasView.gremlin.moveRight(event.getPressure());
-					if (dx < -swipeLength) gameCanvasView.gremlin.moveLeft(event.getPressure());
-					if (dy > swipeLength) gameCanvasView.gremlin.drop();
-					if (dy < -swipeLength) gameCanvasView.gremlin.jump();
+				if (gameCanvasView.prisoner.isAlive()){
+					if (dx > swipeLength) gameCanvasView.prisoner.moveRight(event.getPressure());
+					if (dx < -swipeLength) gameCanvasView.prisoner.moveLeft(event.getPressure());
+					if (dy > swipeLength) gameCanvasView.prisoner.drop();
+					if (dy < -swipeLength) gameCanvasView.prisoner.jump();
 				}
 				
 				if (gameCanvasView.grid.currentPiece != null){
@@ -61,10 +61,10 @@ public class GremlinControls implements OnTouchListener {
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			gameCanvasView.gremlin.stop();
+			gameCanvasView.prisoner.stop();
 			if (isTap){
-				if (gameCanvasView.gremlin.isAlive()){
-					gameCanvasView.gremlin.toggleGrip();
+				if (gameCanvasView.prisoner.isAlive()){
+					gameCanvasView.prisoner.toggleGrip();
 				}
 				if (gameCanvasView.grid.currentPiece != null)
 					gameCanvasView.grid.gameUpdate();	
@@ -77,25 +77,25 @@ public class GremlinControls implements OnTouchListener {
 			
 		return true;
 	}
-	private void createGremlinPhysics() {
-		gremlinPhysicsThread = new Thread(new Runnable() {
+	private void createPrisonerPhysics() {
+		prisonerPhysicsThread = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
-				while (gameCanvasView.gremlin == null);
+				while (gameCanvasView.prisoner == null);
 				long previousTime = System.currentTimeMillis();
 				while (true) {
 					long time = System.currentTimeMillis();
 					long dt = time - previousTime;
 					previousTime = time;
-					gameCanvasView.gremlin.gameUpdate(dt);
+					gameCanvasView.prisoner.gameUpdate(dt);
 //					try {Thread.sleep(666);} catch (InterruptedException e) {e.printStackTrace();}
 //					previousTime = System.currentTimeMillis();
 					try {Thread.sleep(16);} catch (InterruptedException e) {e.printStackTrace();}
 				}
 			}
 		});
-		gremlinPhysicsThread.start();
+		prisonerPhysicsThread.start();
 	}
 	private void createTicker() {
 		tetrisThread = new Thread(new Runnable() {

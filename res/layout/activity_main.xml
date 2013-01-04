@@ -1,0 +1,42 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <net.net76.sunian314.tetrisdungeon.TetrisGridView
+        android:id="@+id/tetrisGridView1"
+        android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+         />
+    <net.net76.sunian314.tetrisdungeon.GameCanvasView
+        android:id="@+id/gameCanvasView1"
+        android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+         />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/peerselect"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Choose a player to connect to:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ListView
+        android:id="@+id/peerlist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:stackFromBottom="false"
+        android:transcriptMode="alwaysScroll" />
+
+
+</LinearLayout>
+    
+</RelativeLayout>

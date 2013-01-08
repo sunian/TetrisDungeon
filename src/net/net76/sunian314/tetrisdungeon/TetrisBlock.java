@@ -80,21 +80,25 @@ public class TetrisBlock {
 		wallside = (wallside % 4) + 1;
 	}
 	void fall(int rows){
-		grid.blockGrid[row - rows][col] = this;
-		if (grid.blockGrid[row][col] == this) grid.blockGrid[row][col] = null;
-		row-= rows;
-		updateBounds();
+		drag(-rows, 0);
 	}
 	void move(int rows, int cols){
 		row += rows;
 		col += cols;
 		updateBounds();
 	}
-	void drag(int rows, int cols){
-		if (grid.blockGrid[row][col] == this) grid.blockGrid[row][col] = null;
-		row += rows;
-		col += cols;
-		grid.blockGrid[row][col] = this;
+	void position(int r, int c){//called by Tetris Player
+		row = r;
+		col = c;
 		updateBounds();
+	}
+	void drag(int rows, int cols){
+		if (grid.blockGrid[row][col] == this) {
+			grid.blockGrid[row][col] = null;
+			if (!partOfCurrent) grid.transmitBlock(row, col);
+		}
+		move(rows, cols);
+		grid.blockGrid[row][col] = this;
+		if (!partOfCurrent) grid.transmitBlock(row, col);
 	}
 }

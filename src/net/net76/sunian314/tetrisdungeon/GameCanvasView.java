@@ -46,6 +46,7 @@ public class GameCanvasView extends View {
 //		mHandler.postDelayed(mTick, 20);
 		running = true;
 		invalidate();
+		System.out.println("I am the " + (MainActivity.isPrisoner ? "Prisoner" : "Dungeon Master"));
 	}
 	@Override 
 	public void onWindowFocusChanged(boolean hasFocus) { 

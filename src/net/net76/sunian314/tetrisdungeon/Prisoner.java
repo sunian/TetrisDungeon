@@ -1,11 +1,14 @@
 package net.net76.sunian314.tetrisdungeon;
 
+import java.io.IOException;
+
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import net.net76.sunian314.tetrisdungeon.R;
 
 public class Prisoner {
+	static final double DENOMINATOR = 65532.0;
 	double xPos, yPos, xVel=0, yVel=0, grav = 1, runVel=1, walkVel=1, jumpVel=2;
 	double lastX, lastY, newX, newY;
 	Paint myPaint;
@@ -85,6 +88,9 @@ public class Prisoner {
 		else if (intersectV) checkCollisionsRight(row, col);
 //		System.out.println(lastX + " => " +newX + "   " + intersectV);
 		xPos = newX; yPos = newY;
+		if (newX != lastX || newY != lastY){
+			transmit();
+		}
 		updateBounds();
 		if (myBlock != null){//have grabbed a block
 			double min = GameCanvasView.blockSize / 2.0 + 1;
@@ -206,6 +212,32 @@ public class Prisoner {
 		xPos = x;
 		yPos = y;
 		updateBounds();
+	}
+	void transmit(){
+		byte[] bytes = new byte[5];
+		bytes[0] = TetrisControls.PRISONER;
+		int x = (int) (xPos / width * DENOMINATOR);
+		int y = (int) (yPos / height * DENOMINATOR);
+		bytes[2] = (byte) (x & 0x0ff);
+		bytes[4] = (byte) (y & 0x0ff);
+		x = x >> 8;
+		y = y >> 8;
+		bytes[1] = (byte) (x & 0x0ff);
+		bytes[3] = (byte) (y & 0x0ff);
+		try {
+			MainActivity.outStream.write(bytes);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	void receive(byte[] bytes){
+		if (bytes.length != 4) return;
+		int x = (bytes[1] & 0x0ff) | ((bytes[0] & 0x0ff) << 8);
+		int y = (bytes[3] & 0x0ff) | ((bytes[2] & 0x0ff) << 8);
+		x = (int) (x/DENOMINATOR * width);
+		y = (int) (y/DENOMINATOR * height);
+		setPos(x, y);
 	}
 	void moveRight(float weight){
 //		xVel = weight > .42 ? runVel : walkVel;

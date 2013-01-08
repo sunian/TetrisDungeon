@@ -1,24 +1,28 @@
 package net.net76.sunian314.tetrisdungeon;
 
+import java.io.IOException;
+
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import net.net76.sunian314.tetrisdungeon.R;
 
 public class PrisonerControls implements OnTouchListener {
 	Thread prisonerPhysicsThread, tetrisThread;
+	MainActivity mainActivity;
 	GameCanvasView gameCanvasView;
 	float xDown, yDown;
 	boolean isTap = false;
 	long tDown;
 	
-	public PrisonerControls(GameCanvasView v){
-		gameCanvasView = v;
+	public PrisonerControls(MainActivity act){
+		mainActivity = act;
+		gameCanvasView = MainActivity.gameCanvasView;
 //		TetrisPiece.createChecklist();
 //		TetrisPiece.createFallOrders();
 		TetrisPiece.createRotationOffsets();
 		createPrisonerPhysics();
 		createTicker();
+		createReadThread();
 	}
 	private void setDownHere(MotionEvent event){
 		xDown = event.getX();
@@ -45,14 +49,6 @@ public class PrisonerControls implements OnTouchListener {
 					if (dy < -swipeLength) gameCanvasView.prisoner.jump();
 				}
 				
-				if (gameCanvasView.grid.currentPiece != null){
-					if (dx > swipeLength) gameCanvasView.grid.currentPiece.move(true);
-					if (dx < -swipeLength) gameCanvasView.grid.currentPiece.move(false);
-					if (dy > swipeLength) gameCanvasView.grid.gameUpdate();
-					if (dy < -swipeLength) gameCanvasView.grid.currentPiece.rotate();
-					if (gameCanvasView.grid.currentPiece != null) gameCanvasView.grid.currentPiece.draw();
-				}
-				
 				setDownHere(event);
 			} else if (dt > 666){
 				setDownHere(event);
@@ -66,8 +62,6 @@ public class PrisonerControls implements OnTouchListener {
 				if (gameCanvasView.prisoner.isAlive()){
 					gameCanvasView.prisoner.toggleGrip();
 				}
-				if (gameCanvasView.grid.currentPiece != null)
-					gameCanvasView.grid.gameUpdate();	
 			}
 			break;
 		default:
@@ -117,5 +111,58 @@ public class PrisonerControls implements OnTouchListener {
 			}
 		});
 		tetrisThread.start();
+	}
+	private void createReadThread(){
+
+        Thread readThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while (MainActivity.connected) {
+						int input = MainActivity.inStream.read();
+						if (input < 0 || input == '!') break;
+						if (gameCanvasView.grid.currentPiece == null){
+							TetrisPiece.transmitNULL();
+						}
+						switch (input) {
+						case 'U':
+							if (gameCanvasView.grid.currentPiece != null){
+								gameCanvasView.grid.currentPiece.rotate();
+								gameCanvasView.grid.currentPiece.transmit();
+								gameCanvasView.grid.currentPiece.draw();
+							}
+							break;
+						case 'L':
+							if (gameCanvasView.grid.currentPiece != null){
+								gameCanvasView.grid.currentPiece.move(false);
+								gameCanvasView.grid.currentPiece.transmit();
+								gameCanvasView.grid.currentPiece.draw();
+							}
+							break;
+						case 'R':
+							if (gameCanvasView.grid.currentPiece != null){
+								gameCanvasView.grid.currentPiece.move(true);
+								gameCanvasView.grid.currentPiece.transmit();
+								gameCanvasView.grid.currentPiece.draw();
+							}
+							break;
+						case 'D':
+						case 'T':
+							if (gameCanvasView.grid.currentPiece != null){
+								gameCanvasView.grid.gameUpdate();
+//								gameCanvasView.grid.currentPiece.draw();
+							}
+							break;
+
+						default:
+							break;
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+        readThread.start();
 	}
 }

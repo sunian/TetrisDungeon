@@ -2,5 +2,26 @@ TetrisDungeon
 
 An Android game based on tetris
 
-more info here:
-http://people.virginia.edu/~jcs5sb/TetrisDungeon/info.html
+It is 2-player, with possibly a future 1-player human vs AI mode. 
+
+One player is the prisoner (currently a green rectangle). He starts at the bottom of the dungeon, and wants to escape through the top. He does so by climbing platforms left behind by falling tetris blocks. 
+
+The second player is the dungeon master. He drops tetris blocks onto the dungeon floor, and his goal is to blow up the prisoner. Every time a full row of tetris blocks are completed, they explode, and the prisoner will lose if he is caught in the explosion. 
+
+The prisoner has the ability to grab and move blocks dropped by the dungeon master in order to prevent him from successfully completing rows and force him to build higher and higher. Once the dungeon master is no longer able to spawn more tetris blocks (he loses the game of tetris), the dungeon ceiling opens and the prisoner is able to climb to the top and escape. 
+
+Controls: Both players' controls consist of touch gestures and can be done anywhere on the screen. 
+
+Prisoner:
+Drag Left/Right to move.
+Drag Up to jump.
+Drag Down to drop through platforms.
+Tap to Grab/Release a block.
+Platforms are white dotted lines and can be jumped through. Walls are green solid lines and are impenetrable. 
+
+Dungeon Master:
+Drag Left/Right to move.
+Drag Up to rotate.
+Drag Down or Tap to accelerate block. 
+
+Note: as for right now, devices must be paired over bluetooth to play with each other.

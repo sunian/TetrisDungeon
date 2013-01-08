@@ -1,7 +1,7 @@
 package net.net76.sunian314.tetrisdungeon;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import net.net76.sunian314.tetrisdungeon.R;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -116,16 +116,26 @@ public class TetrisGrid {
 			if (!currentPiece.addToGrid()) {
 				currentPiece.settle();
 				currentPiece = null;
+				TetrisPiece.transmitNULL();
 				complete = true;
+				try {
+					MainActivity.outStream.write(TetrisControls.SKY_OPEN);
+					MainActivity.outStream.flush();
+				} catch (IOException e) {e.printStackTrace();}
 				MainActivity.tetrisGridView.postInvalidate();
 				return -1;
+			} else {
+				currentPiece.transmit();
 			}
 		} else {
 			if (!currentPiece.fall()) {
 				currentPiece.settle();
 				currentPiece = null;
+				TetrisPiece.transmitNULL();
 				eliminateRows();
 				MainActivity.tetrisGridView.postInvalidate();
+			} else {
+				currentPiece.transmit();
 			}
 		}
 		for (TetrisBlock block : fallingBlocks){
@@ -137,8 +147,11 @@ public class TetrisGrid {
 				fallingBlocks.remove(block);
 			}
 		}
-		if (currentPiece == null) return 1;
-		else currentPiece.draw();
+		if (currentPiece == null) {
+			return 1;
+		} else {
+			currentPiece.draw();
+		}
 		return 0;
 	}
 	void eliminateRows(){
@@ -155,11 +168,16 @@ public class TetrisGrid {
 				gap++;
 				for (int j = 0; j < 10; j++) {
 					blockGrid[i][j] = null;
+					transmitBlock(i, j);
 				}
-				Prisoner gremlin = MainActivity.gameCanvasView.prisoner;
-				Rect gremlinBounds = gremlin.myBounds;
+				Prisoner prisoner = MainActivity.gameCanvasView.prisoner;
+				Rect gremlinBounds = prisoner.myBounds;
 				if (gremlinBounds.top > GameCanvasView.blockSize * (19 - i) && gremlinBounds.bottom < GameCanvasView.blockSize * (20 - i)){
-					gremlin.kill();
+					prisoner.kill();
+					try {
+						MainActivity.outStream.write(TetrisControls.PRISONER_DEAD);
+						MainActivity.outStream.flush();
+					} catch (IOException e) {e.printStackTrace();}
 				}
 			} else if (gap > 0){
 				for (TetrisBlock block : blockGrid[i]) {
@@ -167,5 +185,75 @@ public class TetrisGrid {
 				}
 			}
 		}
+	}
+	void transmitBlock(int row, int col){
+		if (row < 0 || row > 19 || col < 0 || col > 9) return;
+		byte[] bytes = new byte[3];
+		bytes[0] = TetrisControls.GRID;
+		bytes[1] = (byte) (row * 10 + col);
+		if (canGrabBlock(row, col)){
+			bytes[2] = (byte) blockGrid[row][col].type;
+		} else {
+			bytes[2] = TetrisControls.NULL_TYPE;
+		}
+		try {
+			MainActivity.outStream.write(bytes);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	void receiveBlock(byte location, byte type){
+		int loc = location < 0 ? location + 256 : location;
+		int row = loc / 10;
+		int col = loc % 10;
+		if (type == TetrisControls.NULL_TYPE){
+			blockGrid[row][col] = null;
+		} else {
+			if (blockGrid[row][col] == null) {
+				blockGrid[row][col] = new TetrisBlock(this, type, row, col);
+				blockGrid[row][col].partOfCurrent = false;
+			}
+			else blockGrid[row][col].type = type;
+		}
+		MainActivity.tetrisGridView.postInvalidate();
+	}
+	void transmitWall(TetrisBlock block){
+		byte[] bytes = new byte[3];
+		bytes[0] = TetrisControls.WALL;
+		bytes[1] = (byte) (block.row * 10 + block.col);
+		bytes[2] = (byte) block.wallside;
+		try {
+			MainActivity.outStream.write(bytes);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	void receiveWall(byte location, byte side) {
+		int loc = location < 0 ? location + 256 : location;
+		int row = loc / 10;
+		int col = loc % 10;
+		TetrisBlock block = new TetrisBlock(null, 2, row, col);
+		block.wallside = side;
+		addWall(block);
+	}
+	void transmitPlatform(TetrisBlock block){
+		byte[] bytes = new byte[2];
+		bytes[0] = TetrisControls.PLATFORM;
+		bytes[1] = (byte) (block.row * 10 + block.col);
+		try {
+			MainActivity.outStream.write(bytes);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	void receivePlatform(byte location) {
+		int loc = location < 0 ? location + 256 : location;
+		int row = loc / 10;
+		int col = loc % 10;
+		TetrisBlock block = new TetrisBlock(null, 2, row, col);
+		addPlatform(block);
 	}
 }

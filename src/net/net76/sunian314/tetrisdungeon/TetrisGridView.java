@@ -12,6 +12,7 @@ import net.net76.sunian314.tetrisdungeon.R;
 
 public class TetrisGridView extends View {
 	static Paint[] blockPaints = {new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint()};
+	TetrisGrid grid;
 	public TetrisGridView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
@@ -37,7 +38,7 @@ public class TetrisGridView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		canvas.translate(GameCanvasView.transX, GameCanvasView.transY);
-		TetrisGrid grid = MainActivity.gameCanvasView.grid;
+		grid = MainActivity.gameCanvasView.grid;
 		if (grid == null) return;
 //		Bitmap bmap = currentBitmap ? bmap1 : bmap2;
 //		Canvas canvas = currentBitmap ? canvas1 : canvas2;

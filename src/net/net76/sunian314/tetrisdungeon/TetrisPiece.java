@@ -1,13 +1,15 @@
 package net.net76.sunian314.tetrisdungeon;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import net.net76.sunian314.tetrisdungeon.R;
 
+import android.R.array;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Bitmap.Config;
 
 public class TetrisPiece {
 	TetrisBlock[] blocks = new TetrisBlock[4];
@@ -149,8 +151,47 @@ public class TetrisPiece {
 		for (TetrisBlock block : blocks){
 			block.stationary = true;
 			block.partOfCurrent = false;
+			grid.transmitBlock(block.row, block.col);
+			grid.transmitPlatform(block);
+			grid.transmitWall(block);
 			grid.addPlatform(block);
 			grid.addWall(block);
+		}
+	}
+	void transmit(){
+		byte[] bytes = new byte[8];
+		bytes[0] = TetrisControls.CURRENT_PIECE;
+		bytes[1] = (byte) type;
+		for (int i = 0; i < blocks.length; i++) {
+			bytes[i+2] = (byte) (blocks[i].row * 10 + blocks[i].col);
+		}
+		bytes[6] = (byte) (((blocks[1].wallside & 0x7) << 4) | (blocks[0].wallside & 0x7));
+		bytes[7] = (byte) (((blocks[3].wallside & 0x7) << 4) | (blocks[2].wallside & 0x7));
+		try {
+			MainActivity.outStream.write(bytes);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	void receive(byte[] bytes){
+		for (int i = 0; i < blocks.length; i++) {
+			int num = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+			 blocks[i].position(num / 10, num % 10);
+		}
+		blocks[0].wallside = bytes[4] & 0x7;
+		blocks[1].wallside = (bytes[4] >> 4) & 0x7;
+		blocks[2].wallside = bytes[5] & 0x7;
+		blocks[3].wallside = (bytes[5] >> 4) & 0x7;
+		draw();
+	}
+	static void transmitNULL(){
+		try {
+			MainActivity.outStream.write(TetrisControls.CURRENT_PIECE);
+			MainActivity.outStream.write(TetrisControls.NULL_TYPE);
+			MainActivity.outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	static void createChecklist(){

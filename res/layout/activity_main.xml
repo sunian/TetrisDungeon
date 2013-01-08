@@ -14,16 +14,19 @@
         android:layout_width="match_parent"
     	android:layout_height="match_parent"
          />
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/peerselect"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:background="@android:color/background_dark"
+    android:orientation="vertical" >
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="20dp"
         android:layout_gravity="center_horizontal"
         android:text="Choose a player to connect to:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -32,11 +35,18 @@
         android:id="@+id/peerlist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="bottom"
+        android:layout_gravity="fill_horizontal"
+        android:layout_weight="1"
         android:stackFromBottom="false"
         android:transcriptMode="alwaysScroll" />
 
-
+    <Button
+        android:id="@+id/button_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="fill_horizontal"
+        android:text="Host Game" 
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 </LinearLayout>
     
 </RelativeLayout>

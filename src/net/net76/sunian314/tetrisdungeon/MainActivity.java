@@ -1,76 +1,111 @@
 package net.net76.sunian314.tetrisdungeon;
 
-import android.annotation.TargetApi;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.util.Set;
+import java.util.UUID;
+
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.net.wifi.p2p.WifiP2pManager.ActionListener;
-import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemSelectedListener {
+public class MainActivity extends Activity implements OnItemClickListener {
 
-	boolean connected = false;
+	static boolean connected = false, isPrisoner = false;
 	static GameCanvasView gameCanvasView;
 	static TetrisGridView tetrisGridView;
 	
-	WifiP2pManager manager;
-	Channel channel;
-	BroadcastReceiver receiver;
-	IntentFilter intentFilter = new IntentFilter();
-	ListView peerList;
-	private ArrayAdapter<String> peerArrayAdapter;
+	private BluetoothSocket btSocket = null;
+	static BufferedOutputStream outStream = null;
+	static BufferedInputStream inStream = null;
+	private Thread bluetoothThread;
+	ListView pairedDevicesList;
+	private ArrayAdapter<String> pairedDevicesArrayAdapter;
+	private BluetoothAdapter btAdapter;
+
+	// Well known SPP UUID
+	private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+//	private static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+//	private static final UUID MY_UUID = UUID.fromString("a5b64918-ff42-4199-823d-a0b11f675826");
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		findViewById(R.id.peerselect).setVisibility(View.GONE);
-		/*peerArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
-		peerList = (ListView) findViewById(R.id.peerlist);
-		peerList.setAdapter(peerArrayAdapter);
-		peerList.setOnItemSelectedListener(this);
-		manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-		channel = manager.initialize(this, getMainLooper(), null);
-		receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
+		pairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
+		pairedDevicesList = (ListView) findViewById(R.id.peerlist);
+		pairedDevicesList.setAdapter(pairedDevicesArrayAdapter);
+		pairedDevicesList.setOnItemClickListener(this);
 		
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        // Get the local Bluetooth adapter
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!btAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, 3);
+        }
+
+        // Get a set of currently paired devices
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+
+        // If there are paired devices, add each one to the ArrayAdapter
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+            	pairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+            }
+        } else {
+            String noDevices = getResources().getText(R.string.none_paired).toString();
+            pairedDevicesArrayAdapter.add(noDevices);
+        }
 		
-		manager.discoverPeers(channel, new ActionListener() {
+        Button hostButton = (Button) findViewById(R.id.button_server);
+        hostButton.setOnClickListener(new OnClickListener() {
+        	public void onClick(View v) {
+        		hostGame();
+        	}
+        });
+        
+        bluetoothThread = new Thread(new Runnable() {
 			@Override
-			public void onSuccess() {
-				
-			}
-			@Override
-			public void onFailure(int reason) {
-				if (peerArrayAdapter.getCount() == 0){
-					peerArrayAdapter.add("No peers were found");
+			public void run() {
+				try {
+					int input = inStream.read();
+					if (input == 42) connected = true;
+//					showToast(input + " " + connected);
+					if (connected){
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								findViewById(R.id.peerselect).setVisibility(View.GONE);
+								if (isPrisoner) gameCanvasView.setOnTouchListener(new PrisonerControls(MainActivity.this));
+								else gameCanvasView.setOnTouchListener(new TetrisControls(MainActivity.this));
+								gameCanvasView.startGame();
+							}
+						});
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-		});*/
-		
+		});
 		gameCanvasView = (GameCanvasView) findViewById(R.id.gameCanvasView1);
 		tetrisGridView = (TetrisGridView)findViewById(R.id.tetrisGridView1);
 		
-		gameCanvasView.setOnTouchListener(new PrisonerControls(gameCanvasView));
-		gameCanvasView.startGame();
 	}
 
 	@Override
@@ -87,7 +122,26 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		System.out.println("pause");
 //		unregisterReceiver(receiver);
+	}
+	@Override
+	public void onBackPressed() {
+		System.out.println("back pressed");
+		try {
+//			if (bluetoothThread.isAlive()) bluetoothThread.join();
+			if (btSocket != null) {
+				if (connected){
+					outStream.write('!');
+					outStream.flush();
+				}
+				btSocket.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		connected = false;
+//		super.onBackPressed();
 	}
     @Override
     protected void onDestroy() {
@@ -99,7 +153,24 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
     private void disconnect(){
     	connected = false;
     }
-    
+    private void connectToHost(BluetoothDevice device){
+    	isPrisoner = false;
+        try {
+			btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+			btSocket.connect();
+			System.out.println("host responded");
+			showToast(device.getName() + " responded");
+			inStream = new BufferedInputStream(btSocket.getInputStream());
+			outStream = new BufferedOutputStream(btSocket.getOutputStream());
+			bluetoothThread.start();
+			outStream.write(42);
+			outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			showToast("connection failed");
+			System.out.println("no connection");
+		}
+    }
     void showToast(final String msg){
     	runOnUiThread(new Runnable() {
 			@Override
@@ -108,65 +179,53 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 			}
 		});
     }
-    /**
-     * A BroadcastReceiver that notifies of important Wi-Fi p2p events.
-     */
-    public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
-
-        private WifiP2pManager manager;
-        private Channel channel;
-        private MainActivity activity;
-        PeerListListener peerListListener;
-
-        public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel, MainActivity activity) {
-        	super();
-            this.manager = manager;
-            this.channel = channel;
-            this.activity = activity;
-            peerListListener = new PeerListListener() {
-				@Override
-				public void onPeersAvailable(WifiP2pDeviceList peers) {
-					for (WifiP2pDevice device : peers.getDeviceList()){
-						peerArrayAdapter.add(device.deviceName + "\n" + device.deviceAddress);
+    
+	private void hostGame(){
+    	isPrisoner = true;
+    	Thread serverThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				BluetoothServerSocket mmServerSocket;
+		    	try {
+		    		mmServerSocket = btAdapter.listenUsingRfcommWithServiceRecord("TetrisDungeon", MY_UUID);
+		    		showToast("waiting...");
+					btSocket = mmServerSocket.accept();
+					if (btSocket != null){
+						showToast("Request from " + btSocket.getRemoteDevice().getName());
+						System.out.println(btSocket.getRemoteDevice().getName());
+						outStream = new BufferedOutputStream(btSocket.getOutputStream());
+						inStream = new BufferedInputStream(btSocket.getInputStream());
+						bluetoothThread.start();
+						System.out.println("connecting to " + btSocket.getRemoteDevice().getAddress());
+						outStream.write(42);
+						outStream.flush();
+						
 					}
+					mmServerSocket.close();
+				} catch (IOException e) {
+					showToast("server failed");
+					e.printStackTrace();
 				}
-			};
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            System.out.println(action);
-            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
-                // Check to see if Wi-Fi is enabled and notify appropriate activity
-            	int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
-                if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                	showToast("Wifi-Direct is supported on your device.");
-                } else {
-                    showToast("Warning: Wifi-Direct is not supported on your device.");
-                }
-            } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-                // Call WifiP2pManager.requestPeers() to get a list of current peers
-            	if (manager != null){
-            		manager.requestPeers(channel, peerListListener);
-            	}
-            } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-                // Respond to new connection or disconnections
-            } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-                // Respond to this device's wifi state changing
-            }
-        }
+			}
+		});
+		serverThread.start();
+    	
     }
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	@Override
-	public void onItemSelected(AdapterView<?> adapterView, View v, int arg2, long id) {
-//		manager.stopPeerDiscovery(channel, null);
-		
-	}
 
 	@Override
-	public void onNothingSelected(AdapterView<?> arg0) {
-		
+	public void onItemClick(AdapterView<?> adapterView, View v, int arg2, long id) {
+		// Get the device MAC address, which is the last 17 chars in the View
+        String info = ((TextView) v).getText().toString();
+        String address = info.substring(info.length() - 17);
+        
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        for (BluetoothDevice dev : btAdapter.getBondedDevices()){
+        	if (dev.getAddress().equals(address)){
+        		device = dev;
+        		break;
+        	}
+        }
+        connectToHost(device);
 	}
    
 }

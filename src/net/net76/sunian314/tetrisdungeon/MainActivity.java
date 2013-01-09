@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -32,11 +33,13 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	
 	private BluetoothSocket btSocket = null;
 	static BufferedOutputStream outStream = null;
+//	static print outStream = null;
 	static BufferedInputStream inStream = null;
 	private Thread bluetoothThread;
 	ListView pairedDevicesList;
 	private ArrayAdapter<String> pairedDevicesArrayAdapter;
 	private BluetoothAdapter btAdapter;
+	private OnTouchListener controller = null;
 
 	// Well known SPP UUID
 	private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -84,17 +87,19 @@ public class MainActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void run() {
 				try {
+					System.out.println("reading...");
 					int input = inStream.read();
 					if (input == 42) connected = true;
-//					showToast(input + " " + connected);
+					System.out.println(input + " " + connected);
 					if (connected){
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								findViewById(R.id.peerselect).setVisibility(View.GONE);
-								if (isPrisoner) gameCanvasView.setOnTouchListener(new PrisonerControls(MainActivity.this));
-								else gameCanvasView.setOnTouchListener(new TetrisControls(MainActivity.this));
+								controller = isPrisoner ? new PrisonerControls(MainActivity.this) : new TetrisControls(MainActivity.this);
+								gameCanvasView.setOnTouchListener(controller);
 								gameCanvasView.startGame();
+								
 							}
 						});
 					}
@@ -107,7 +112,20 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		tetrisGridView = (TetrisGridView)findViewById(R.id.tetrisGridView1);
 		
 	}
-
+	void startNewGame(){
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				isPrisoner = !isPrisoner;
+				controller = null;
+				gameCanvasView.setOnTouchListener(null);
+				gameCanvasView.setupGame();
+				controller = isPrisoner ? new PrisonerControls(MainActivity.this) : new TetrisControls(MainActivity.this);
+				gameCanvasView.setOnTouchListener(controller);
+				gameCanvasView.startGame();
+			}
+		});
+	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -128,19 +146,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	@Override
 	public void onBackPressed() {
 		System.out.println("back pressed");
-		try {
-//			if (bluetoothThread.isAlive()) bluetoothThread.join();
-			if (btSocket != null) {
-				if (connected){
-					outStream.write('!');
-					outStream.flush();
-				}
-				btSocket.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		connected = false;
+		disconnect();
 //		super.onBackPressed();
 	}
     @Override
@@ -150,7 +156,26 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 		disconnect();
     }
-    private void disconnect(){
+    void disconnect(){
+    	showToast("disconnecting...");
+    	try {
+//			if (bluetoothThread.isAlive()) bluetoothThread.join();
+			if (btSocket != null) {
+				if (connected){
+					outStream.write('!');
+					outStream.flush();
+				}
+				if (inStream != null){
+					inStream.close();
+				}
+				if (outStream != null){
+					outStream.close();
+				}
+				btSocket.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     	connected = false;
     }
     private void connectToHost(BluetoothDevice device){
@@ -170,6 +195,24 @@ public class MainActivity extends Activity implements OnItemClickListener {
 			showToast("connection failed");
 			System.out.println("no connection");
 		}
+    }
+    static void writeToStream(byte[] bytes){
+    	if (!connected) return;
+    	try {
+			outStream.write(bytes);
+			outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    static void writeToStream(int aChar){
+    	if (!connected) return;
+    	try {
+    		outStream.write(aChar);
+    		outStream.flush();
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
     }
     void showToast(final String msg){
     	runOnUiThread(new Runnable() {

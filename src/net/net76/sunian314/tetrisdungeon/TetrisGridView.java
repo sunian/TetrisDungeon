@@ -4,11 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.view.View;
-import net.net76.sunian314.tetrisdungeon.R;
 
 public class TetrisGridView extends View {
 	static Paint[] blockPaints = {new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint()};

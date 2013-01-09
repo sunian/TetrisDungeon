@@ -2,6 +2,7 @@ package net.net76.sunian314.tetrisdungeon;
 
 import java.io.IOException;
 
+import android.R.bool;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -13,6 +14,7 @@ public class PrisonerControls implements OnTouchListener {
 	float xDown, yDown;
 	boolean isTap = false;
 	long tDown;
+	boolean running = true;
 	
 	public PrisonerControls(MainActivity act){
 		mainActivity = act;
@@ -78,14 +80,21 @@ public class PrisonerControls implements OnTouchListener {
 			public void run() {
 				while (gameCanvasView.prisoner == null);
 				long previousTime = System.currentTimeMillis();
-				while (true) {
+				while (running) {
 					long time = System.currentTimeMillis();
 					long dt = time - previousTime;
 					previousTime = time;
-					gameCanvasView.prisoner.gameUpdate(dt);
+					int status = gameCanvasView.prisoner.gameUpdate(dt); 
+					if (status == 1){
+						MainActivity.writeToStream(TetrisControls.PRISONER_ESCAPE);
+					}
+					if (status != 0) running = false;
 //					try {Thread.sleep(666);} catch (InterruptedException e) {e.printStackTrace();}
 //					previousTime = System.currentTimeMillis();
 					try {Thread.sleep(16);} catch (InterruptedException e) {e.printStackTrace();}
+				}
+				if (MainActivity.connected){
+					mainActivity.startNewGame();
 				}
 			}
 		});
@@ -96,14 +105,10 @@ public class PrisonerControls implements OnTouchListener {
 			@Override
 			public void run() {
 				while (gameCanvasView.grid == null);
-				while (true) {
+				while (running) {
 					long time = System.currentTimeMillis();
 					if (gameCanvasView.grid.gameUpdate() < 0)
-						try {
-							tetrisThread.join();
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
+						break;
 					long dt = System.currentTimeMillis() - time;
 //					System.out.println(dt);
 					try {Thread.sleep(1337 - dt);} catch (InterruptedException e) {e.printStackTrace();}
@@ -118,9 +123,12 @@ public class PrisonerControls implements OnTouchListener {
 			@Override
 			public void run() {
 				try {
-					while (MainActivity.connected) {
+					while (MainActivity.connected && running) {
 						int input = MainActivity.inStream.read();
-						if (input < 0 || input == '!') break;
+						if (input < 0 || input == '!') {
+							mainActivity.disconnect();
+							break;
+						}
 						if (gameCanvasView.grid.currentPiece == null){
 							TetrisPiece.transmitNULL();
 						}
@@ -159,6 +167,7 @@ public class PrisonerControls implements OnTouchListener {
 						}
 					}
 				} catch (IOException e) {
+					mainActivity.showToast("error: " + e.getMessage());
 					e.printStackTrace();
 				}
 			}

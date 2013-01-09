@@ -1,11 +1,8 @@
 package net.net76.sunian314.tetrisdungeon;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
-import android.R.array;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -167,12 +164,7 @@ public class TetrisPiece {
 		}
 		bytes[6] = (byte) (((blocks[1].wallside & 0x7) << 4) | (blocks[0].wallside & 0x7));
 		bytes[7] = (byte) (((blocks[3].wallside & 0x7) << 4) | (blocks[2].wallside & 0x7));
-		try {
-			MainActivity.outStream.write(bytes);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(bytes);
 	}
 	void receive(byte[] bytes){
 		for (int i = 0; i < blocks.length; i++) {
@@ -186,13 +178,7 @@ public class TetrisPiece {
 		draw();
 	}
 	static void transmitNULL(){
-		try {
-			MainActivity.outStream.write(TetrisControls.CURRENT_PIECE);
-			MainActivity.outStream.write(TetrisControls.NULL_TYPE);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(new byte[]{TetrisControls.CURRENT_PIECE, TetrisControls.NULL_TYPE});
 	}
 	static void createChecklist(){
 		checks.clear();

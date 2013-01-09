@@ -1,6 +1,5 @@
 package net.net76.sunian314.tetrisdungeon;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import android.graphics.Bitmap;
@@ -118,10 +117,7 @@ public class TetrisGrid {
 				currentPiece = null;
 				TetrisPiece.transmitNULL();
 				complete = true;
-				try {
-					MainActivity.outStream.write(TetrisControls.SKY_OPEN);
-					MainActivity.outStream.flush();
-				} catch (IOException e) {e.printStackTrace();}
+				MainActivity.writeToStream(TetrisControls.SKY_OPEN);
 				MainActivity.tetrisGridView.postInvalidate();
 				return -1;
 			} else {
@@ -174,10 +170,7 @@ public class TetrisGrid {
 				Rect gremlinBounds = prisoner.myBounds;
 				if (gremlinBounds.top > GameCanvasView.blockSize * (19 - i) && gremlinBounds.bottom < GameCanvasView.blockSize * (20 - i)){
 					prisoner.kill();
-					try {
-						MainActivity.outStream.write(TetrisControls.PRISONER_DEAD);
-						MainActivity.outStream.flush();
-					} catch (IOException e) {e.printStackTrace();}
+					MainActivity.writeToStream(TetrisControls.PRISONER_DEAD);
 				}
 			} else if (gap > 0){
 				for (TetrisBlock block : blockGrid[i]) {
@@ -196,12 +189,7 @@ public class TetrisGrid {
 		} else {
 			bytes[2] = TetrisControls.NULL_TYPE;
 		}
-		try {
-			MainActivity.outStream.write(bytes);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(bytes);
 	}
 	void receiveBlock(byte location, byte type){
 		int loc = location < 0 ? location + 256 : location;
@@ -223,12 +211,7 @@ public class TetrisGrid {
 		bytes[0] = TetrisControls.WALL;
 		bytes[1] = (byte) (block.row * 10 + block.col);
 		bytes[2] = (byte) block.wallside;
-		try {
-			MainActivity.outStream.write(bytes);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(bytes);
 	}
 	void receiveWall(byte location, byte side) {
 		int loc = location < 0 ? location + 256 : location;
@@ -242,12 +225,7 @@ public class TetrisGrid {
 		byte[] bytes = new byte[2];
 		bytes[0] = TetrisControls.PLATFORM;
 		bytes[1] = (byte) (block.row * 10 + block.col);
-		try {
-			MainActivity.outStream.write(bytes);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(bytes);
 	}
 	void receivePlatform(byte location) {
 		int loc = location < 0 ? location + 256 : location;

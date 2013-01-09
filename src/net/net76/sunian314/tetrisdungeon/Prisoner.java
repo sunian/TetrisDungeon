@@ -1,11 +1,8 @@
 package net.net76.sunian314.tetrisdungeon;
 
-import java.io.IOException;
-
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import net.net76.sunian314.tetrisdungeon.R;
 
 public class Prisoner {
 	static final double DENOMINATOR = 65532.0;
@@ -45,9 +42,9 @@ public class Prisoner {
 		}
 //		System.out.println();
 	}
-	void gameUpdate(long milisecs){
+	int gameUpdate(long milisecs){
 //		GameCanvasView.printElapsed();
-		if (!alive) return;
+		if (!alive) return -1;
 		lastX = xPos; lastY = yPos;
 		yVel -= grav * milisecs / 1000.0;
 		newX = xPos + xVel * milisecs / 1000.0;
@@ -63,6 +60,7 @@ public class Prisoner {
 			newY = height - myHeight;
 //			intersectH = false;
 			yVel = 0;
+			return 1;
 		}
 		if (newX < 1){
 			newX = 1;
@@ -98,6 +96,7 @@ public class Prisoner {
 			double handY = (myBounds.top + myBounds.bottom )/2.0;
 			int blockX = (myBlock.myBounds.left + myBlock.myBounds.right)/2;
 			int blockY = (myBlock.myBounds.top + myBlock.myBounds.bottom)/2;
+			int oldRow = myBlock.row, oldCol = myBlock.col;
 			if (handX - blockX > min){
 				if (grid.blockGrid[myBlock.row][myBlock.col + 1] == null) myBlock.drag(0, 1);
 			} else if (blockX - handX > min){
@@ -108,9 +107,13 @@ public class Prisoner {
 			} else if (blockY - handY > min){
 				if (grid.blockGrid[myBlock.row + 1][myBlock.col] == null) myBlock.drag(1, 0);
 			}
-			MainActivity.tetrisGridView.postInvalidate();
+			if (myBlock.row != oldRow || myBlock.col != oldCol) {
+				transmitBlock();
+				MainActivity.tetrisGridView.postInvalidate();
+			}
 		}
 //		System.out.println(milisecs);
+		return 0;
 	}
 	/*
 	 * GameCanvasView.blockSize * col, 
@@ -224,12 +227,7 @@ public class Prisoner {
 		y = y >> 8;
 		bytes[1] = (byte) (x & 0x0ff);
 		bytes[3] = (byte) (y & 0x0ff);
-		try {
-			MainActivity.outStream.write(bytes);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(bytes);
 	}
 	void receive(byte[] bytes){
 		if (bytes.length != 4) return;
@@ -274,11 +272,31 @@ public class Prisoner {
 			grid.fallingBlocks.add(myBlock);
 			myBlock = null;
 		}
+		transmitBlock();
 	}
 	void kill(){
 		alive = false;
 	}
 	boolean isAlive(){
 		return alive;
+	}
+	void transmitBlock(){
+		byte[] bytes = new byte[2];
+		if (myBlock == null){
+			bytes[0] = TetrisControls.NULL_TYPE;
+			bytes[1] = TetrisControls.PRISONER_BLOCK;
+		} else {
+			bytes[0] = TetrisControls.PRISONER_BLOCK;
+			bytes[1] = (byte) (myBlock.row * 10 + myBlock.col);
+		}
+		MainActivity.writeToStream(bytes);
+	}
+	void receiveBlock(byte location) {
+		int loc = location < 0 ? location + 256 : location;
+		int row = loc / 10;
+		int col = loc % 10;
+		if (myBlock == null) myBlock = new TetrisBlock(null, 2, row, col);
+		else myBlock.position(row, col);
+		updateBounds();
 	}
 }

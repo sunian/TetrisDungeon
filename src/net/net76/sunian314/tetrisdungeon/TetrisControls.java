@@ -1,20 +1,21 @@
 package net.net76.sunian314.tetrisdungeon;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
 public class TetrisControls implements OnTouchListener {
-	static final char CURRENT_PIECE = '#';
-	static final char GRID = '+';
+	static final char NULL_TYPE = 'N';
+	static final char CURRENT_PIECE = ':';
+	static final char GRID = '#';
 	static final char WALL = '|';
 	static final char PLATFORM = '_';
 	static final char PRISONER = 'P';
-	static final char NULL_TYPE = 'N';
+	static final char PRISONER_BLOCK = '%';
 	static final char PRISONER_DEAD = 'X';
+	static final char PRISONER_ESCAPE = 'Y';
 	static final char SKY_OPEN = '^';
 	
 	Thread gameThread;
@@ -23,6 +24,7 @@ public class TetrisControls implements OnTouchListener {
 	float xDown, yDown;
 	long tDown;
 	boolean isTap = false, mustReset = false;
+	boolean running = true;
 	
 	public TetrisControls(MainActivity act){
 		mainActivity = act;
@@ -79,16 +81,20 @@ public class TetrisControls implements OnTouchListener {
 				byte[] pieceBuffer = new byte[6];
 				byte[] prisonerBuffer = new byte[4];
 				try {
-					while (MainActivity.connected) {
+					while (MainActivity.connected && running) {
 //						System.out.println("reading");
 						int input = MainActivity.inStream.read();
 //						System.out.println("read: " + input);
-						if (input < 0 || input == '!') break;
+						if (input < 0 || input == '!') {
+							mainActivity.disconnect();
+							break;
+						}
 						switch (input) {
 						case CURRENT_PIECE:
 //							System.out.println("CURRENT_PIECE");
 							int type = MainActivity.inStream.read();
 							if (type == NULL_TYPE){
+								if (gameCanvasView.grid.currentPiece != null) gameCanvasView.grid.currentPiece.bmap.recycle();
 								gameCanvasView.grid.currentPiece = null;
 								continue;
 							}
@@ -124,11 +130,28 @@ public class TetrisControls implements OnTouchListener {
 						case PLATFORM:
 							gameCanvasView.grid.receivePlatform((byte) MainActivity.inStream.read());
 							break;
+						case PRISONER_BLOCK:
+							gameCanvasView.prisoner.receiveBlock((byte) MainActivity.inStream.read());
+							break;
 						case PRISONER_DEAD:
 							gameCanvasView.prisoner.kill();
+							running = false;
+							break;
+						case PRISONER_ESCAPE:
+							running = false;
 							break;
 						case SKY_OPEN:
 							gameCanvasView.grid.complete = true;
+							break;
+						case NULL_TYPE:
+							input = MainActivity.inStream.read();
+							switch (input) {
+							case PRISONER_BLOCK:
+								gameCanvasView.prisoner.myBlock = null;
+								break;
+							default:
+								break;
+							}
 							break;
 
 						default:
@@ -139,16 +162,14 @@ public class TetrisControls implements OnTouchListener {
 					mainActivity.showToast("error: " + e.getMessage());
 					e.printStackTrace();
 				}
+				if (MainActivity.connected){
+					mainActivity.startNewGame();
+				}
 			}
 		});
         readThread.start();
 	}
 	private void sendToHost(char aByte){
-		try {
-			MainActivity.outStream.write(aByte);
-			MainActivity.outStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		MainActivity.writeToStream(aByte);
 	}
 }

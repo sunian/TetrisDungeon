@@ -24,12 +24,12 @@ public class GameCanvasView extends View {
 	final Handler mHandler = new Handler();
 	boolean running = false;
 
-	private Runnable mTick = new Runnable() {
-	    public void run() {
-	        invalidate();
-	        mHandler.postDelayed(this, 10); // 20ms == 60fps
-	    }
-	};
+//	private Runnable mTick = new Runnable() {
+//	    public void run() {
+//	        invalidate();
+//	        mHandler.postDelayed(this, 10); // 20ms == 60fps
+//	    }
+//	};
 	
 	public GameCanvasView(Context context) {
 		super(context);
@@ -66,8 +66,8 @@ public class GameCanvasView extends View {
 		transY = getHeight() - myHeight;
 		blockSize = myWidth/10;
 		initializePaints();
-		grid = new TetrisGrid(myWidth, myHeight);
-		prisoner = new Prisoner(myWidth, myHeight, grid);
+		
+		setupGame();
 
 		gameBorder.moveTo(0, myHeight);
 		gameBorder.lineTo(0, 0);
@@ -76,6 +76,13 @@ public class GameCanvasView extends View {
 		gameBorder.lineTo(0, myHeight - 1);
 		
 		initialized = true;
+	}
+	void setupGame(){
+		running = false;
+		if (grid != null) grid.bmapWalls.recycle();
+		grid = new TetrisGrid(myWidth, myHeight);
+		prisoner = new Prisoner(myWidth, myHeight, grid);
+		MainActivity.tetrisGridView.postInvalidate();
 	}
 	void initializePaints(){
 		wallPaint.setColor(Color.GREEN);

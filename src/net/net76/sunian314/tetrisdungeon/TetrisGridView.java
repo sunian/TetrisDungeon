@@ -9,10 +9,11 @@ import android.view.View;
 
 public class TetrisGridView extends View {
 	static Paint[] blockPaints = {new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint()};
+	Paint textPaint = new Paint();
 	TetrisGrid grid;
 	public TetrisGridView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-
+		textPaint.setColor(Color.WHITE);
 		blockPaints[0].setColor(Color.RED);
 		blockPaints[1].setColor(Color.rgb(253,107,9));//orange
 		blockPaints[2].setColor(Color.MAGENTA);
@@ -34,6 +35,8 @@ public class TetrisGridView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
+		canvas.drawText("Score:", 3, 10, textPaint);
+		canvas.drawText("" + MainActivity.myScore, 3, 30, textPaint);
 		canvas.translate(GameCanvasView.transX, GameCanvasView.transY);
 		grid = MainActivity.gameCanvasView.grid;
 		if (grid == null) return;

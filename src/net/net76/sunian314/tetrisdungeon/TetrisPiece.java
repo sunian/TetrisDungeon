@@ -119,6 +119,23 @@ public class TetrisPiece {
 		}
 		return true;
 	}
+	void drop(){
+		int min = 20;
+		for (TetrisBlock block : blocks) {
+			for (int i = 1; i <= min; i++) {
+				if (!grid.spotIsEmtpy(block.row - i, block.col)) {
+					min = i - 1;
+					if (min < 1) return;
+					break;
+				}
+			}
+		}
+		removeFromGrid();
+		for (TetrisBlock block : blocks) {
+			block.fall(min);
+		}
+		addToGrid();
+	}
 	boolean move(boolean right){
 		int offset = right ? 1 : -1;
 		for (TetrisBlock block : blocks){

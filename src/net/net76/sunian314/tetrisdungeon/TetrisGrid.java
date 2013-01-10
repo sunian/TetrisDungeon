@@ -171,6 +171,7 @@ public class TetrisGrid {
 				if (gremlinBounds.top > GameCanvasView.blockSize * (19 - i) && gremlinBounds.bottom < GameCanvasView.blockSize * (20 - i)){
 					prisoner.kill();
 					MainActivity.writeToStream(TetrisControls.PRISONER_DEAD);
+//					MainActivity.myScore = 0;
 				}
 			} else if (gap > 0){
 				for (TetrisBlock block : blockGrid[i]) {

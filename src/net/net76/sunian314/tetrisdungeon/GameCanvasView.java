@@ -41,7 +41,8 @@ public class GameCanvasView extends View {
 	public GameCanvasView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
-	void startGame(){
+	void startGame(MainActivity mainActivity){
+		setOnTouchListener(MainActivity.isPrisoner ? new PrisonerControls(mainActivity) : new TetrisControls(mainActivity));
 //		mHandler.removeCallbacks(mTick);
 //		mHandler.postDelayed(mTick, 20);
 		running = true;
@@ -78,6 +79,7 @@ public class GameCanvasView extends View {
 		initialized = true;
 	}
 	void setupGame(){
+		setOnTouchListener(null);
 		running = false;
 		if (grid != null) grid.bmapWalls.recycle();
 		grid = new TetrisGrid(myWidth, myHeight);

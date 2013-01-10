@@ -77,6 +77,7 @@ public class TetrisControls implements OnTouchListener {
         Thread readThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				
 				byte[] gridBuffer = new byte[2];
 				byte[] pieceBuffer = new byte[6];
 				byte[] prisonerBuffer = new byte[4];
@@ -85,8 +86,10 @@ public class TetrisControls implements OnTouchListener {
 //						System.out.println("reading");
 						int input = MainActivity.inStream.read();
 //						System.out.println("read: " + input);
-						if (input < 0 || input == '!') {
-							mainActivity.disconnect();
+						if (input < 0) break;
+						if (input == '!') {
+							MainActivity.startNew = false;
+							mainActivity.quitGame(false);
 							break;
 						}
 						switch (input) {
@@ -135,9 +138,13 @@ public class TetrisControls implements OnTouchListener {
 							break;
 						case PRISONER_DEAD:
 							gameCanvasView.prisoner.kill();
+							MainActivity.myScore++;
+							MainActivity.startNew = true;
 							running = false;
 							break;
 						case PRISONER_ESCAPE:
+							MainActivity.startNew = true;
+//							MainActivity.myScore = 0;
 							running = false;
 							break;
 						case SKY_OPEN:
@@ -162,7 +169,8 @@ public class TetrisControls implements OnTouchListener {
 					mainActivity.showToast("error: " + e.getMessage());
 					e.printStackTrace();
 				}
-				if (MainActivity.connected){
+				System.out.println("T conn: " + MainActivity.connected + "   new: " + MainActivity.startNew);
+				if (MainActivity.connected && MainActivity.startNew){
 					mainActivity.startNewGame();
 				}
 			}

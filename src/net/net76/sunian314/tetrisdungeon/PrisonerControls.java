@@ -2,7 +2,6 @@ package net.net76.sunian314.tetrisdungeon;
 
 import java.io.IOException;
 
-import android.R.bool;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -87,13 +86,15 @@ public class PrisonerControls implements OnTouchListener {
 					int status = gameCanvasView.prisoner.gameUpdate(dt); 
 					if (status == 1){
 						MainActivity.writeToStream(TetrisControls.PRISONER_ESCAPE);
+						MainActivity.myScore++;
 					}
 					if (status != 0) running = false;
 //					try {Thread.sleep(666);} catch (InterruptedException e) {e.printStackTrace();}
 //					previousTime = System.currentTimeMillis();
 					try {Thread.sleep(16);} catch (InterruptedException e) {e.printStackTrace();}
 				}
-				if (MainActivity.connected){
+				System.out.println("P conn: " + MainActivity.connected + "   new: " + MainActivity.startNew);
+				if (MainActivity.connected && MainActivity.startNew){
 					mainActivity.startNewGame();
 				}
 			}
@@ -107,11 +108,14 @@ public class PrisonerControls implements OnTouchListener {
 				while (gameCanvasView.grid == null);
 				while (running) {
 					long time = System.currentTimeMillis();
-					if (gameCanvasView.grid.gameUpdate() < 0)
+					int status = gameCanvasView.grid.gameUpdate(); 
+					if (status < 0) {
 						break;
+					}
 					long dt = System.currentTimeMillis() - time;
+					if (dt > 600) dt = 600;
 //					System.out.println(dt);
-					try {Thread.sleep(1337 - dt);} catch (InterruptedException e) {e.printStackTrace();}
+					try {Thread.sleep((status == 1 ? 666 : 1337) - dt);} catch (InterruptedException e) {e.printStackTrace();}
 				}
 			}
 		});
@@ -125,8 +129,10 @@ public class PrisonerControls implements OnTouchListener {
 				try {
 					while (MainActivity.connected && running) {
 						int input = MainActivity.inStream.read();
-						if (input < 0 || input == '!') {
-							mainActivity.disconnect();
+						if (input < 0) break;
+						if (input == '!') {
+							running = false;
+							mainActivity.quitGame(false);
 							break;
 						}
 						if (gameCanvasView.grid.currentPiece == null){
@@ -155,6 +161,12 @@ public class PrisonerControls implements OnTouchListener {
 							}
 							break;
 						case 'D':
+							if (gameCanvasView.grid.currentPiece != null){
+								gameCanvasView.grid.currentPiece.drop();
+								gameCanvasView.grid.currentPiece.transmit();
+								gameCanvasView.grid.currentPiece.draw();
+							}
+							break;
 						case 'T':
 							if (gameCanvasView.grid.currentPiece != null){
 								gameCanvasView.grid.gameUpdate();

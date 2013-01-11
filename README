@@ -10,18 +10,26 @@ The second player is the dungeon master. He drops tetris blocks onto the dungeon
 
 The prisoner has the ability to grab and move blocks dropped by the dungeon master in order to prevent him from successfully completing rows and force him to build higher and higher. Once the dungeon master is no longer able to spawn more tetris blocks (he loses the game of tetris), the dungeon ceiling opens and the prisoner is able to climb to the top and escape. 
 
+
 Controls: Both players' controls consist of touch gestures and can be done anywhere on the screen. 
 
 Prisoner:
-Drag Left/Right to move.
+Drag Left/Right to move. (if your device supports it, the pressure (or surfacearea) you apply to the screen determines your run speed)
 Drag Up to jump.
 Drag Down to drop through platforms.
 Tap to Grab/Release a block.
 Platforms are white dotted lines and can be jumped through. Walls are green solid lines and are impenetrable. 
 
 Dungeon Master:
-Drag Left/Right to move.
-Drag Up to rotate.
-Drag Down or Tap to accelerate block. 
+Drag Left/Right to move block.
+Drag Up to rotate block.
+Drag Down to drop block.
+Tap to accelerate block. 
+
+To start a game, one player must select 'Host Game', after which the second player selects the host's device from the list.
+The host starts out as the prisoner, and the second player plays as dungeon master. Both players switch roles between every game.
+
+If you with to disconnect from a player, please select 'Quit Game' from the options menu.
+The 'Forfeit Game' option has not yet been implemented.
 
 Note: as for right now, devices must be paired over bluetooth to play with each other.

@@ -10,6 +10,7 @@ public class TetrisControls extends GameControls {
 	static final char NULL_TYPE = 'N';
 	static final char CURRENT_PIECE = ':';
 	static final char GRID = '#';
+	static final char EXPLOSION = '@';
 	static final char WALL = '|';
 	static final char PLATFORM = '_';
 	static final char PRISONER = 'P';
@@ -29,6 +30,7 @@ public class TetrisControls extends GameControls {
 	boolean isTap = false, mustReset = false;
 	
 	public TetrisControls(MainActivity act){
+		super();
 		mainActivity = act;
 		gameCanvasView = MainActivity.gameCanvasView;
 		createReadThread();
@@ -140,6 +142,9 @@ public class TetrisControls extends GameControls {
 							break;
 						case PRISONER_BLOCK:
 							gameCanvasView.prisoner.receiveBlock((byte) MainActivity.inStream.read());
+							break;
+						case EXPLOSION:
+							gameCanvasView.myControls.createExplosionThread(MainActivity.inStream.read());
 							break;
 						case FORFEIT:
 							MainActivity.allowOutput = false;

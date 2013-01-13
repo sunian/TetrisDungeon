@@ -8,12 +8,13 @@ import android.os.Bundle;
 
 public class LauncherActivity extends Activity{
 	static final int RESTART = 123574127;//leet for restart
-	static Bitmap spriteSheet;
+	static Bitmap androidSpriteSheet, explosionSpriteSheet;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		System.out.println("Launching game");
-		spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.android_sprites);
+		androidSpriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.android_sprites);
+		explosionSpriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.explosion_sprites);
 		startActivityForResult(new Intent(this, MainActivity.class), 0);
 	}
 	@Override

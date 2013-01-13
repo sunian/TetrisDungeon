@@ -1,5 +1,9 @@
 package net.net76.sunian314.tetrisdungeon;
 
+import java.util.Iterator;
+import java.util.ListIterator;
+
+import net.net76.sunian314.tetrisdungeon.GameControls.Explosion;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -137,13 +141,20 @@ public class GameCanvasView extends View {
 					prisoner.myBounds.top + prisoner.topOffset, 
 					prisoner.myBounds.right + prisoner.rightOffset, 
 					prisoner.myBounds.bottom + prisoner.bottomOffset);
-			canvas.drawBitmap(LauncherActivity.spriteSheet, prisoner.frames, spriteRect, null);
+			canvas.drawBitmap(LauncherActivity.androidSpriteSheet, prisoner.frames, spriteRect, null);
 //			canvas.drawRect(prisoner.myBounds, defaultPaint);
 			if (prisoner.myBlock != null){
 				int blockX = (prisoner.myBlock.myBounds.left + prisoner.myBlock.myBounds.right)/2;
 				int blockY = (prisoner.myBlock.myBounds.top + prisoner.myBlock.myBounds.bottom)/2;
 				canvas.drawLine(prisoner.inRightHand ? prisoner.myBounds.right : prisoner.myBounds.left, (int)(prisoner.myBounds.top + prisoner.myHeight * 0.7575), blockX, blockY, defaultPaint);
 				canvas.drawCircle(blockX, blockY, blockSize/5, defaultPaint);
+			}
+		}
+		if (myControls != null){
+			Iterator<Explosion> iter = myControls.explosions.iterator();
+			while (iter.hasNext()){
+				Explosion e = iter.next();
+				canvas.drawBitmap(LauncherActivity.explosionSpriteSheet, e.bitmapFrame, e.positionRect, null);
 			}
 		}
 //		printElapsed();

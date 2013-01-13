@@ -166,6 +166,9 @@ public class TetrisGrid {
 					blockGrid[i][j] = null;
 					transmitBlock(i, j);
 				}
+				byte[] bytes = {TetrisControls.EXPLOSION, (byte) i};
+				MainActivity.writeToStream(bytes);
+				MainActivity.gameCanvasView.myControls.createExplosionThread(i);
 				Prisoner prisoner = MainActivity.gameCanvasView.prisoner;
 				Rect gremlinBounds = prisoner.myBounds;
 				if (gremlinBounds.top > GameCanvasView.blockSize * (19 - i) && gremlinBounds.bottom < GameCanvasView.blockSize * (20 - i)){

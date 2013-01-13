@@ -213,7 +213,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		disconnect(true);
     }
     void disconnect(boolean notify){
-    	showToast("disconnecting...");
+    	if (connected) showToast("disconnecting...");
     	boolean canWrite = connected;
     	connected = false;
     	try {

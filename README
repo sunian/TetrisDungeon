@@ -4,7 +4,7 @@ An Android game based on tetris
 
 It is 2-player, with possibly a future 1-player human vs AI mode. 
 
-One player is the prisoner (currently a green rectangle). He starts at the bottom of the dungeon, and wants to escape through the top. He does so by climbing platforms left behind by falling tetris blocks. 
+One player is the prisoner (a cute innocent android). He starts at the bottom of the dungeon, and wants to escape through the top. He does so by climbing platforms left behind by falling tetris blocks. 
 
 The second player is the dungeon master. He drops tetris blocks onto the dungeon floor, and his goal is to blow up the prisoner. Every time a full row of tetris blocks are completed, they explode, and the prisoner will lose if he is caught in the explosion. 
 
@@ -35,3 +35,4 @@ The 'Forfeit Game' option has not yet been implemented.
 Note: as for right now, devices must be paired over bluetooth to play with each other.
 
 credit for the android sprites goes to http://opengameart.org/users/creek23
+credit for the explosion sprites goes to http://i-am-bryan.com/webs/tutorials/tutorial-spaceshooter-in-hge-part3/

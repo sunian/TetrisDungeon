@@ -12,6 +12,7 @@ public class SinglePlayerControls extends GameControls {
 	long tDown;
 	
 	public SinglePlayerControls(MainActivity act){
+		super();
 		mainActivity = act;
 		gameCanvasView = MainActivity.gameCanvasView;
 		TetrisPiece.createRotationOffsets();

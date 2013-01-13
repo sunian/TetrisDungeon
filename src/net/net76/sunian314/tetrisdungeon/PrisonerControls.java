@@ -15,6 +15,7 @@ public class PrisonerControls extends GameControls {
 	long tDown;
 	
 	public PrisonerControls(MainActivity act){
+		super();
 		mainActivity = act;
 		gameCanvasView = MainActivity.gameCanvasView;
 //		TetrisPiece.createChecklist();

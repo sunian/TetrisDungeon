@@ -27,8 +27,8 @@ public class Prisoner {
 //		System.out.println(screenW + "x" + screenH);
 		width = screenW;
 		height = screenH;
-		spriteW = LauncherActivity.spriteSheet.getWidth() / 6;
-		spriteH = LauncherActivity.spriteSheet.getHeight() / 3;
+		spriteW = LauncherActivity.androidSpriteSheet.getWidth() / 6;
+		spriteH = LauncherActivity.androidSpriteSheet.getHeight() / 3;
 		this.grid = tetrisGrid;
 		myHeight = (int)(screenW * 3.0/40.0);
 		myWidth = (int)(myHeight * 45.0/66.0);//2/3;

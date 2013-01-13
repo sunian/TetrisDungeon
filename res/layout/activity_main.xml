@@ -3,17 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
-
+    
     <net.net76.sunian314.tetrisdungeon.TetrisGridView
         android:id="@+id/tetrisGridView1"
         android:layout_width="match_parent"
     	android:layout_height="match_parent"
+    	android:background="@drawable/backrepeat"
          />
     <net.net76.sunian314.tetrisdungeon.GameCanvasView
         android:id="@+id/gameCanvasView1"
         android:layout_width="match_parent"
     	android:layout_height="match_parent"
          />
+    
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/peerselect"
@@ -41,12 +43,24 @@
         android:transcriptMode="alwaysScroll" />
 
     <Button
+        android:id="@+id/button_single"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="42dp"
+        android:layout_gravity="fill_horizontal"
+        android:text="Start Single Player"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="30sp" />
+    <Button
         android:id="@+id/button_server"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="42dp"
         android:layout_gravity="fill_horizontal"
-        android:text="Host Game" 
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:text="Host Game"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="30sp" />
+
 </LinearLayout>
     
 </RelativeLayout>

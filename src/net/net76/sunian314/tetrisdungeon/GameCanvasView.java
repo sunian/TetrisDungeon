@@ -1,12 +1,14 @@
 package net.net76.sunian314.tetrisdungeon;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
@@ -23,6 +25,7 @@ public class GameCanvasView extends View {
 	Path gameBorder = new Path();
 	final Handler mHandler = new Handler();
 	boolean running = false;
+	GameControls myControls;
 
 //	private Runnable mTick = new Runnable() {
 //	    public void run() {
@@ -42,9 +45,12 @@ public class GameCanvasView extends View {
 		super(context, attrs, defStyle);
 	}
 	void startGame(MainActivity mainActivity){
-		setOnTouchListener(MainActivity.isPrisoner ? new PrisonerControls(mainActivity) : new TetrisControls(mainActivity));
+		setControls(MainActivity.players > 1 ? 
+				(MainActivity.isPrisoner ? new PrisonerControls(mainActivity) : new TetrisControls(mainActivity)) : 
+					new SinglePlayerControls(mainActivity));
 //		mHandler.removeCallbacks(mTick);
 //		mHandler.postDelayed(mTick, 20);
+		MainActivity.allowOutput = MainActivity.players > 1;
 		running = true;
 		invalidate();
 		System.out.println("I am the " + (MainActivity.isPrisoner ? "Prisoner" : "Dungeon Master"));
@@ -79,7 +85,7 @@ public class GameCanvasView extends View {
 		initialized = true;
 	}
 	void setupGame(){
-		setOnTouchListener(null);
+		setControls(null);
 		running = false;
 		if (grid != null) grid.bmapWalls.recycle();
 		grid = new TetrisGrid(myWidth, myHeight);
@@ -105,6 +111,11 @@ public class GameCanvasView extends View {
 		
 		skyPaint.setColor(Color.CYAN);
 	}
+	public void setControls(GameControls controls){
+		myControls = controls;
+		setOnTouchListener(myControls);
+	}
+	Rect spriteRect = new Rect();
 	@Override
 	protected void onDraw(Canvas canvas) {
 //		startTimer();
@@ -122,11 +133,16 @@ public class GameCanvasView extends View {
 		canvas.drawPath(gameBorder, gameBorderPaint);
 		if (grid.complete) canvas.drawRect(1, 0 - transY - 5, myWidth - 1, 0, skyPaint);
 		if (prisoner != null && prisoner.isAlive()){
-			canvas.drawRect(prisoner.myBounds, prisoner.myPaint);
+			spriteRect.set(prisoner.myBounds.left + prisoner.leftOffset, 
+					prisoner.myBounds.top + prisoner.topOffset, 
+					prisoner.myBounds.right + prisoner.rightOffset, 
+					prisoner.myBounds.bottom + prisoner.bottomOffset);
+			canvas.drawBitmap(LauncherActivity.spriteSheet, prisoner.frames, spriteRect, null);
+//			canvas.drawRect(prisoner.myBounds, defaultPaint);
 			if (prisoner.myBlock != null){
 				int blockX = (prisoner.myBlock.myBounds.left + prisoner.myBlock.myBounds.right)/2;
 				int blockY = (prisoner.myBlock.myBounds.top + prisoner.myBlock.myBounds.bottom)/2;
-				canvas.drawLine(prisoner.inRightHand ? prisoner.myBounds.right : prisoner.myBounds.left, (prisoner.myBounds.top + prisoner.myBounds.bottom)/2, blockX, blockY, defaultPaint);
+				canvas.drawLine(prisoner.inRightHand ? prisoner.myBounds.right : prisoner.myBounds.left, (int)(prisoner.myBounds.top + prisoner.myHeight * 0.7575), blockX, blockY, defaultPaint);
 				canvas.drawCircle(blockX, blockY, blockSize/5, defaultPaint);
 			}
 		}

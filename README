@@ -29,7 +29,9 @@ Tap to accelerate block.
 To start a game, one player must select 'Host Game', after which the second player selects the host's device from the list.
 The host starts out as the prisoner, and the second player plays as dungeon master. Both players switch roles between every game.
 
-If you with to disconnect from a player, please select 'Quit Game' from the options menu.
+If you wish to disconnect from a player, please select 'Quit Game' from the options menu.
 The 'Forfeit Game' option has not yet been implemented.
 
 Note: as for right now, devices must be paired over bluetooth to play with each other.
+
+credit for the android sprites goes to http://opengameart.org/users/creek23

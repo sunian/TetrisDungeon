@@ -2,14 +2,18 @@ package net.net76.sunian314.tetrisdungeon;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 public class LauncherActivity extends Activity{
 	static final int RESTART = 123574127;//leet for restart
+	static Bitmap spriteSheet;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		System.out.println("Launching game");
+		spriteSheet = BitmapFactory.decodeResource(getResources(), R.drawable.android_sprites);
 		startActivityForResult(new Intent(this, MainActivity.class), 0);
 	}
 	@Override

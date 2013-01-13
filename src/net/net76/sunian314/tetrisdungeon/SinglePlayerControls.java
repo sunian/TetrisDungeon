@@ -1,12 +1,9 @@
 package net.net76.sunian314.tetrisdungeon;
 
-import java.io.IOException;
-
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 
-public class PrisonerControls extends GameControls {
+public class SinglePlayerControls extends GameControls {
 	Thread prisonerPhysicsThread, tetrisThread;
 	MainActivity mainActivity;
 	GameCanvasView gameCanvasView;
@@ -14,15 +11,13 @@ public class PrisonerControls extends GameControls {
 	boolean isTap = false;
 	long tDown;
 	
-	public PrisonerControls(MainActivity act){
+	public SinglePlayerControls(MainActivity act){
 		mainActivity = act;
 		gameCanvasView = MainActivity.gameCanvasView;
-//		TetrisPiece.createChecklist();
-//		TetrisPiece.createFallOrders();
 		TetrisPiece.createRotationOffsets();
 		createPrisonerPhysics();
 		createTicker();
-		createReadThread();
+		createAIThread();
 	}
 	private void setDownHere(MotionEvent event){
 		xDown = event.getX();
@@ -92,10 +87,8 @@ public class PrisonerControls extends GameControls {
 //					previousTime = System.currentTimeMillis();
 					try {Thread.sleep(16);} catch (InterruptedException e) {e.printStackTrace();}
 				}
-				System.out.println("P conn: " + MainActivity.connected + "   new: " + MainActivity.startNew);
-				if (MainActivity.connected && MainActivity.startNew){
-					mainActivity.startNewGame();
-				}
+				running = false;
+				mainActivity.quitGame(false);
 			}
 		});
 		prisonerPhysicsThread.start();
@@ -120,75 +113,62 @@ public class PrisonerControls extends GameControls {
 		});
 		tetrisThread.start();
 	}
-	private void createReadThread(){
+	private void createAIThread(){
 
-        Thread readThread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					while (MainActivity.connected && running) {
-						int input = MainActivity.inStream.read();
-						if (input < 0) break;
-						if (input == TetrisControls.QUIT_GAME) {
-							running = false;
-							mainActivity.quitGame(false);
-							break;
-						}
-						if (gameCanvasView.grid.currentPiece == null){
-							TetrisPiece.transmitNULL();
-						}
-						switch (input) {
-						case 'U':
-							if (gameCanvasView.grid.currentPiece != null){
-								gameCanvasView.grid.currentPiece.rotate();
-								gameCanvasView.grid.currentPiece.transmit();
-								gameCanvasView.grid.currentPiece.draw();
-							}
-							break;
-						case 'L':
-							if (gameCanvasView.grid.currentPiece != null){
-								gameCanvasView.grid.currentPiece.move(false);
-								gameCanvasView.grid.currentPiece.transmit();
-								gameCanvasView.grid.currentPiece.draw();
-							}
-							break;
-						case 'R':
-							if (gameCanvasView.grid.currentPiece != null){
-								gameCanvasView.grid.currentPiece.move(true);
-								gameCanvasView.grid.currentPiece.transmit();
-								gameCanvasView.grid.currentPiece.draw();
-							}
-							break;
-						case 'D':
-							if (gameCanvasView.grid.currentPiece != null){
-								gameCanvasView.grid.currentPiece.drop();
-								gameCanvasView.grid.currentPiece.transmit();
-								gameCanvasView.grid.currentPiece.draw();
-							}
-							break;
-						case 'T':
-							if (gameCanvasView.grid.currentPiece != null){
-								gameCanvasView.grid.gameUpdate();
-//								gameCanvasView.grid.currentPiece.draw();
-							}
-							break;
-						case TetrisControls.FORFEIT:
-							MainActivity.allowOutput = false;
-							MainActivity.myScore++;
-							MainActivity.startNew = true;
-							running = false;
-							break;
-
-						default:
-							break;
-						}
+				while (running) {
+					int input = 0;
+					if (input < 0) break;
+					if (input == TetrisControls.QUIT_GAME) {
+						running = false;
+						mainActivity.quitGame(false);
+						break;
 					}
-				} catch (IOException e) {
-					mainActivity.showToast("error: " + e.getMessage());
-					e.printStackTrace();
+					switch (input) {
+					case 'U':
+						if (gameCanvasView.grid.currentPiece != null){
+							gameCanvasView.grid.currentPiece.rotate();
+							gameCanvasView.grid.currentPiece.draw();
+						}
+						break;
+					case 'L':
+						if (gameCanvasView.grid.currentPiece != null){
+							gameCanvasView.grid.currentPiece.move(false);
+							gameCanvasView.grid.currentPiece.draw();
+						}
+						break;
+					case 'R':
+						if (gameCanvasView.grid.currentPiece != null){
+							gameCanvasView.grid.currentPiece.move(true);
+							gameCanvasView.grid.currentPiece.draw();
+						}
+						break;
+					case 'D':
+						if (gameCanvasView.grid.currentPiece != null){
+							gameCanvasView.grid.currentPiece.drop();
+							gameCanvasView.grid.currentPiece.draw();
+						}
+						break;
+					case 'T':
+						if (gameCanvasView.grid.currentPiece != null){
+							gameCanvasView.grid.gameUpdate();
+						}
+						break;
+					case TetrisControls.FORFEIT:
+						MainActivity.allowOutput = false;
+						MainActivity.myScore++;
+						MainActivity.startNew = true;
+						running = false;
+						break;
+
+					default:
+						break;
+					}
 				}
 			}
 		});
-        readThread.start();
+//        thread.start();
 	}
 }

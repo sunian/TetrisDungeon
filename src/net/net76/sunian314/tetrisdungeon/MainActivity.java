@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener {
 
-	static boolean connected = false, isPrisoner = false, startNew = true;
+	static boolean connected = false, isPrisoner = true, startNew = true, allowOutput = false;
 	static GameCanvasView gameCanvasView;
 	static TetrisGridView tetrisGridView;
 	static int myScore = 0;
@@ -39,6 +39,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	ListView pairedDevicesList;
 	private ArrayAdapter<String> pairedDevicesArrayAdapter;
 	private BluetoothAdapter btAdapter;
+	static int players = 2;
 
 	// Well known SPP UUID
 	private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");//SPP
@@ -83,6 +84,15 @@ public class MainActivity extends Activity implements OnItemClickListener {
         hostButton.setOnClickListener(new OnClickListener() {
         	public void onClick(View v) {
         		hostGame();
+        	}
+        });
+        
+        Button p1Button = (Button) findViewById(R.id.button_single);
+        p1Button.setOnClickListener(new OnClickListener() {
+        	public void onClick(View v) {
+        		players = 1;
+        		findViewById(R.id.peerselect).setVisibility(View.GONE);
+				gameCanvasView.startGame(MainActivity.this);
         	}
         });
         
@@ -155,7 +165,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_forfeit:
-			
+			forfeitGame();
 			return true;
 		case R.id.menu_quit:
 			quitGame(true);
@@ -165,6 +175,19 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		}
 	}
 	
+	void forfeitGame() {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (findViewById(R.id.peerselect).getVisibility() == View.GONE){
+					startNew = true;
+					gameCanvasView.myControls.killThreads();
+					writeToStream(TetrisControls.FORFEIT);
+					allowOutput = false;
+				}				
+			}
+		});
+	}
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -197,7 +220,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 //			if (bluetoothThread.isAlive()) bluetoothThread.join();
 			if (btSocket != null) {
 				if (canWrite ){
-					outStream.write('!');
+					outStream.write(TetrisControls.QUIT_GAME);
 					outStream.flush();
 				}
 				if (inStream != null){
@@ -243,7 +266,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		}
     }
     static void writeToStream(byte[] bytes){
-    	if (!connected) return;
+    	if (!connected || !allowOutput) return;
     	try {
 			outStream.write(bytes);
 			outStream.flush();
@@ -252,7 +275,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		}
     }
     static void writeToStream(int aChar){
-    	if (!connected) return;
+    	if (!connected || !allowOutput) return;
     	try {
     		outStream.write(aChar);
     		outStream.flush();

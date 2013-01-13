@@ -11,32 +11,36 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int ic_launcher=0x7f020000;
+        public static final int android_sprites=0x7f020000;
+        public static final int backrepeat=0x7f020001;
+        public static final int ic_launcher=0x7f020002;
+        public static final int wall_tile=0x7f020003;
     }
     public static final class id {
-        public static final int TableLayout1=0x7f070007;
-        public static final int button_scan=0x7f07000f;
-        public static final int button_server=0x7f070004;
-        public static final int discoverable=0x7f070016;
+        public static final int TableLayout1=0x7f070008;
+        public static final int button_scan=0x7f070010;
+        public static final int button_server=0x7f070005;
+        public static final int button_single=0x7f070004;
+        public static final int discoverable=0x7f070017;
         public static final int gameCanvasView1=0x7f070001;
-        public static final int insecure_connect_scan=0x7f070015;
-        public static final int menu_forfeit=0x7f070012;
-        public static final int menu_quit=0x7f070013;
-        public static final int new_devices=0x7f07000d;
-        public static final int paired_devices=0x7f07000a;
+        public static final int insecure_connect_scan=0x7f070016;
+        public static final int menu_forfeit=0x7f070013;
+        public static final int menu_quit=0x7f070014;
+        public static final int new_devices=0x7f07000e;
+        public static final int paired_devices=0x7f07000b;
         public static final int peerlist=0x7f070003;
-        public static final int peerlists=0x7f070011;
+        public static final int peerlists=0x7f070012;
         public static final int peerselect=0x7f070002;
-        public static final int peerselects=0x7f070010;
-        public static final int secure_connect_scan=0x7f070014;
-        public static final int tableRow1=0x7f07000e;
-        public static final int tableRow2=0x7f070008;
-        public static final int tableRow3=0x7f07000b;
+        public static final int peerselects=0x7f070011;
+        public static final int secure_connect_scan=0x7f070015;
+        public static final int tableRow1=0x7f07000f;
+        public static final int tableRow2=0x7f070009;
+        public static final int tableRow3=0x7f07000c;
         public static final int tetrisGridView1=0x7f070000;
-        public static final int title_left_text=0x7f070005;
-        public static final int title_new_devices=0x7f07000c;
-        public static final int title_paired_devices=0x7f070009;
-        public static final int title_right_text=0x7f070006;
+        public static final int title_left_text=0x7f070006;
+        public static final int title_new_devices=0x7f07000d;
+        public static final int title_paired_devices=0x7f07000a;
+        public static final int title_right_text=0x7f070007;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

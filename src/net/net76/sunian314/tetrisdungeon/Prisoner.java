@@ -15,15 +15,23 @@ public class Prisoner {
 	private boolean alive = true, canJump = true, fallThrough = false;
 	TetrisGrid grid;
 	TetrisBlock myBlock;
-	boolean inRightHand = false;
+	boolean inRightHand = false, facingRight = true;
+	Rect frames = new Rect();
+	int spriteW = 62, spriteH = 88;
+	int topOffset, bottomOffset, leftOffset, rightOffset;
+	int frameLengthIdle = 200, frameLengthWalk = 100;
+	int frameCounter = 0, frameLimit = frameLengthIdle;
+	int currentFrame = 0;
 	
 	public Prisoner(int screenW, int screenH, TetrisGrid tetrisGrid){
 //		System.out.println(screenW + "x" + screenH);
 		width = screenW;
 		height = screenH;
+		spriteW = LauncherActivity.spriteSheet.getWidth() / 6;
+		spriteH = LauncherActivity.spriteSheet.getHeight() / 3;
 		this.grid = tetrisGrid;
-		myHeight = screenW * 3/40;
-		myWidth = myHeight * 2/3;
+		myHeight = (int)(screenW * 3.0/40.0);
+		myWidth = (int)(myHeight * 45.0/66.0);//2/3;
 		runVel = myWidth * 4;
 		walkVel = runVel / 2;
 		jumpVel = myHeight * 14;
@@ -34,6 +42,11 @@ public class Prisoner {
 		updateBounds();
 		myPaint = new Paint();
 		myPaint.setColor(Color.rgb(178,207,88));
+		frames = new Rect(0, 0, spriteW, spriteH);
+		topOffset = (int)(myHeight /-40.0) + 2;
+		bottomOffset = (int)(myHeight * 12.0/80.0) + 2;
+		leftOffset = (int)(myWidth * -5.0/56.0);
+		rightOffset = (int)(myWidth * 6.0/56.0);
 	}
 	private void updateBounds(){
 		myBounds.set((int)(xPos), (int)(height - yPos - myHeight), (int)(xPos + myWidth), (int)(height - yPos));
@@ -90,6 +103,7 @@ public class Prisoner {
 			transmit();
 		}
 		updateBounds();
+		updateFrame(milisecs);
 		if (myBlock != null){//have grabbed a block
 			double min = GameCanvasView.blockSize / 2.0 + 1;
 			double handX = inRightHand ? myBounds.right : myBounds.left;
@@ -115,6 +129,34 @@ public class Prisoner {
 //		System.out.println(milisecs);
 		return 0;
 	}
+	void updateFrame(long milisecs){
+		frameCounter += milisecs;
+		if (frameCounter >= frameLimit){
+			frameCounter -= frameLimit;
+			currentFrame = (currentFrame + 1) % 4;
+			int row, col = currentFrame < 3 ? currentFrame : 1;
+			if (!facingRight){
+				col += 3;
+			}
+			if (yVel > 0){
+				row = 2;
+			} else {
+				if (xVel == 0){
+					row = 0;
+				} else {
+					row = 1;
+				}
+			}
+			transmitFrame(row, col);
+			setFrameBounds(row, col);
+		}
+	}
+	void setFrameBounds(int row, int col){
+		frames.left = col * spriteW;
+		frames.right = (col + 1) * spriteW;
+		frames.top = row * spriteH;
+		frames.bottom = (row + 1) * spriteH;
+	}
 	/*
 	 * GameCanvasView.blockSize * col, 
 	 * (19 - row) * GameCanvasView.blockSize, 
@@ -131,7 +173,10 @@ public class Prisoner {
 		boolean compLeft = lastX + myWidth < left;
 		boolean compRight = lastX > right;
 		if (grid.wallBelow(row, col)){
-			if (!compLeft && !compRight){
+			if (!compLeft && !compRight && !compAbove && !compBelow){
+				canJump = newY + myHeight/2 >= bottom;
+				newY = canJump ? Math.max(newY, bottom + 1) : Math.min(newY, bottom - 1 - myHeight);
+			} else if (!compLeft && !compRight){
 				if (compAbove){
 					canJump = true;
 					newY = Math.max(newY, bottom + 1);
@@ -178,7 +223,9 @@ public class Prisoner {
 			boolean compBelow = lastY + myHeight < bottom;
 			boolean compLeft = lastX + myWidth < right;
 			boolean compRight = lastX > right;
-			if (!compAbove && !compBelow){
+			if (!compLeft && !compRight && !compAbove && !compBelow){
+				newX = newX + myWidth/2 >= right ? Math.max(newX, right + 1) : Math.min(newX, right - 1 - myWidth);
+			} else if (!compAbove && !compBelow){
 				if (compRight){
 					newX = Math.max(newX, right + 1);
 				} else if (compLeft){
@@ -240,19 +287,29 @@ public class Prisoner {
 	void moveRight(float weight){
 //		xVel = weight > .42 ? runVel : walkVel;
 		xVel = runVel * weight / .5;
+		frameLimit = frameLengthWalk;
+		facingRight = true;
+		frameCounter = frameLimit;
 	}
 	void moveLeft(float weight){
 //		xVel = weight > .42 ? -runVel : -walkVel;
 		xVel = -runVel * weight / .5;
+		frameLimit = frameLengthWalk;
+		facingRight = false;
+		frameCounter = frameLimit;
 	}
 	void stop(){
 		xVel = 0;
+		frameLimit = frameLengthIdle;
 		fallThrough = false;
 	}
 	void jump(){
 		if (canJump) {
 			yVel = jumpVel;
 			canJump = false;
+			frameLimit = frameLengthIdle;
+			frameCounter = frameLimit;
+			currentFrame = 0;
 		}
 	}
 	void drop(){
@@ -298,5 +355,16 @@ public class Prisoner {
 		if (myBlock == null) myBlock = new TetrisBlock(null, 2, row, col);
 		else myBlock.position(row, col);
 		updateBounds();
+	}
+	void transmitFrame(int row, int col){
+		byte[] bytes = new byte[2];
+		bytes[0] = TetrisControls.PRISONER_FRAME;
+		bytes[1] = (byte) ((row & 0x03) | ((col & 0x07) << 2));
+		MainActivity.writeToStream(bytes);
+	}
+	void receiveFrame(byte loc) {
+		int row = loc & 0x03;
+		int col = (loc >> 2) & 0x07;
+		setFrameBounds(row, col);
 	}
 }

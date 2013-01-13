@@ -4,11 +4,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
 public class TetrisGridView extends View {
 	static Paint[] blockPaints = {new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint(), new Paint()};
+	static Paint[] blockPaints2 = new Paint[7];
 	Paint textPaint = new Paint();
 	TetrisGrid grid;
 	public TetrisGridView(Context context, AttributeSet attrs) {
@@ -22,7 +25,11 @@ public class TetrisGridView extends View {
 		blockPaints[5].setColor(Color.rgb(127,0,55));//grape
 		blockPaints[6].setColor(Color.rgb(127,51,0));//brown
 		blockPaints[2].setColor(Color.rgb(178,0,255));//purple
-		
+		for (int i = 0; i < blockPaints.length; i++) {
+			blockPaints2[i] = darkenPaint(blockPaints[i]);
+			blockPaints2[i].setStyle(Style.STROKE);
+			blockPaints2[i].setStrokeWidth(3);
+		}
 //		final Handler h = new Handler();
 //		h.post(new Runnable() {
 //			@Override
@@ -32,6 +39,7 @@ public class TetrisGridView extends View {
 //			}
 //		});
 	}
+	RectF decor = new RectF();
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
@@ -49,6 +57,12 @@ public class TetrisGridView extends View {
 				if (block != null && !block.partOfCurrent){
 //					System.out.println(block.row + "x" + block.col + "  " + block.myBounds);
 					canvas.drawRoundRect(block.getBounds(), GameCanvasView.blockSize/6, GameCanvasView.blockSize/6, blockPaints[block.type]);
+					decor.set(block.getBounds());
+					decor.left += GameCanvasView.blockSize/4.0;
+					decor.right -= GameCanvasView.blockSize/4.0;
+					decor.top += GameCanvasView.blockSize/4.0;
+					decor.bottom -= GameCanvasView.blockSize/4.0;
+					canvas.drawRoundRect(decor, GameCanvasView.blockSize/12.0f, GameCanvasView.blockSize/12.0f, blockPaints2[block.type]);
 //					canvas.drawRect(block.myBounds, blockPaints[block.type]);
 					
 				}
@@ -57,5 +71,11 @@ public class TetrisGridView extends View {
 		
 		canvas.drawBitmap(grid.bmapWalls, 0, 0, null);
 		grid.dirty = false;
+	}
+	private Paint darkenPaint(Paint p){
+		Paint paint = new Paint(p);
+		int color = p.getColor();
+		paint.setColor(Color.rgb((int)(Color.red(color)*0.75), (int)(Color.green(color)*0.75), (int)(Color.blue(color)*0.75)));
+		return paint;
 	}
 }

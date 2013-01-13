@@ -6,17 +6,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-public class TetrisControls implements OnTouchListener {
+public class TetrisControls extends GameControls {
 	static final char NULL_TYPE = 'N';
 	static final char CURRENT_PIECE = ':';
 	static final char GRID = '#';
 	static final char WALL = '|';
 	static final char PLATFORM = '_';
 	static final char PRISONER = 'P';
+	static final char PRISONER_FRAME = 'F';
 	static final char PRISONER_BLOCK = '%';
 	static final char PRISONER_DEAD = 'X';
 	static final char PRISONER_ESCAPE = 'Y';
 	static final char SKY_OPEN = '^';
+	static final char FORFEIT = '*';
+	static final char QUIT_GAME = '!';
 	
 	Thread gameThread;
 	MainActivity mainActivity;
@@ -24,7 +27,6 @@ public class TetrisControls implements OnTouchListener {
 	float xDown, yDown;
 	long tDown;
 	boolean isTap = false, mustReset = false;
-	boolean running = true;
 	
 	public TetrisControls(MainActivity act){
 		mainActivity = act;
@@ -87,7 +89,7 @@ public class TetrisControls implements OnTouchListener {
 						int input = MainActivity.inStream.read();
 //						System.out.println("read: " + input);
 						if (input < 0) break;
-						if (input == '!') {
+						if (input == QUIT_GAME) {
 							MainActivity.startNew = false;
 							mainActivity.quitGame(false);
 							break;
@@ -116,6 +118,9 @@ public class TetrisControls implements OnTouchListener {
 								gameCanvasView.prisoner.receive(prisonerBuffer);
 							}
 							break;
+						case PRISONER_FRAME:
+							gameCanvasView.prisoner.receiveFrame((byte) MainActivity.inStream.read());
+							break;
 						case GRID:
 							input = MainActivity.inStream.read(gridBuffer);
 							if (input < gridBuffer.length) mainActivity.showToast("GRID: " + input);
@@ -136,6 +141,8 @@ public class TetrisControls implements OnTouchListener {
 						case PRISONER_BLOCK:
 							gameCanvasView.prisoner.receiveBlock((byte) MainActivity.inStream.read());
 							break;
+						case FORFEIT:
+							MainActivity.allowOutput = false;
 						case PRISONER_DEAD:
 							gameCanvasView.prisoner.kill();
 							MainActivity.myScore++;

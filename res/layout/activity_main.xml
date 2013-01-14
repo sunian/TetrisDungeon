@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="42dp"
         android:layout_gravity="fill_horizontal"
-        android:text="Start Single Player"
+        android:text="Start Single Player Training"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="30sp" />
     <Button

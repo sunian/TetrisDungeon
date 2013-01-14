@@ -36,3 +36,6 @@ Note: as for right now, devices must be paired over bluetooth to play with each 
 
 credit for the android sprites goes to http://opengameart.org/users/creek23
 credit for the explosion sprites goes to http://i-am-bryan.com/webs/tutorials/tutorial-spaceshooter-in-hge-part3/
+
+Troubleshooting:
+If you have trouble connecting to a peer, first close the app using the back button, then switch bluetooth off then back on again. If the connection still fails, you may need to reboot your device.

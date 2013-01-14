@@ -15,7 +15,7 @@ public class TetrisBlock {
 	//5 S cyan
 	//6 z purple
 	int type;
-	int wallside = 0;// Right Top Left Bottom
+	int wallside = 0;// Left Top Right Bottom
 	int row, col;
 	boolean stationary, partOfCurrent, grabbed;
 	Rect myBounds;

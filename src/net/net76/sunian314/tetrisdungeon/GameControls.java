@@ -20,10 +20,12 @@ public abstract class GameControls implements OnTouchListener {
 			@Override
 			public void run() {
 				ArrayList<Explosion> temp = new ArrayList<GameControls.Explosion>();
-				for (int i = 0; i < 10; i++) {
-					Explosion e = new Explosion(row, i);
-					temp.add(e);
-					explosions.add(e);
+				synchronized (explosions) {
+					for (int i = 0; i < 10; i++) {
+						Explosion e = new Explosion(row, i);
+						temp.add(e);
+						explosions.add(e);
+					}
 				}
 				for (int i = 0; i < 5; i++) {
 					for (Explosion e : temp) {
@@ -31,7 +33,9 @@ public abstract class GameControls implements OnTouchListener {
 					}
 					try {Thread.sleep(65);} catch (InterruptedException e) {e.printStackTrace();}
 				}
-				explosions.removeAll(temp);
+				synchronized (explosions) {
+					explosions.removeAll(temp);
+				}
 			}
 		});
 		thread.start();

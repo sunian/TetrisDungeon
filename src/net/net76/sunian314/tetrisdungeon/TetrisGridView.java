@@ -46,6 +46,7 @@ public class TetrisGridView extends View {
 		canvas.drawText("Score:", 3, 10, textPaint);
 		canvas.drawText("" + MainActivity.myScore, 3, 30, textPaint);
 		canvas.translate(GameCanvasView.transX, GameCanvasView.transY);
+		if (MainActivity.gameCanvasView == null) return;
 		grid = MainActivity.gameCanvasView.grid;
 		if (grid == null) return;
 //		Bitmap bmap = currentBitmap ? bmap1 : bmap2;

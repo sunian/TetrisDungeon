@@ -10,7 +10,7 @@ import android.graphics.Color;
 
 public class TetrisPiece {
 	TetrisBlock[] blocks = new TetrisBlock[4];
-	int orientation = 1;
+	int orientation = 0;
 	int type;
 	TetrisGrid grid;
 
@@ -91,21 +91,21 @@ public class TetrisPiece {
 	boolean rotate(){
 		if (grid == null) return false;
 		for (int i = 0; i < 4; i++) {
-			if (!grid.spotIsEmtpy(blocks[i].row - rotationOffsets[type][orientation - 1][i][0], 
-					blocks[i].col + rotationOffsets[type][orientation - 1][i][1])) {
+			if (!grid.spotIsEmtpy(blocks[i].row - rotationOffsets[type][orientation][i][0], 
+					blocks[i].col + rotationOffsets[type][orientation][i][1])) {
 				return false;
 			}
 		}
 		removeFromGrid();
 //		System.out.println(blocks[2].row + ", " + blocks[2].col);
 		for (int i = 0; i < 4; i++) {
-			blocks[i].row -= rotationOffsets[type][orientation - 1][i][0];
-			blocks[i].col += rotationOffsets[type][orientation - 1][i][1];
+			blocks[i].row -= rotationOffsets[type][orientation][i][0];
+			blocks[i].col += rotationOffsets[type][orientation][i][1];
 			blocks[i].rotate();
 		}
 				
 		addToGrid();
-		orientation = (orientation % 4) + 1;
+		orientation = (orientation + 1) % 4;
 		return true;
 	}
 	boolean fall(){
@@ -149,6 +149,13 @@ public class TetrisPiece {
 		}
 		addToGrid();
 		return true;
+	}
+	int getLocation(){
+		int min = 20;
+		for (TetrisBlock block : blocks) {
+			if (block.col < min) min = block.col;
+		}
+		return min;
 	}
 	void draw(){
 		bmap.eraseColor(Color.TRANSPARENT);

@@ -7,10 +7,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -31,6 +33,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	static GameCanvasView gameCanvasView;
 	static TetrisGridView tetrisGridView;
 	static int myScore = 0;
+	int myAIDifficulty = 0;
 	private BluetoothSocket btSocket = null;
 	static BufferedOutputStream outStream = null;
 //	static print outStream = null;
@@ -90,9 +93,19 @@ public class MainActivity extends Activity implements OnItemClickListener {
         Button p1Button = (Button) findViewById(R.id.button_single);
         p1Button.setOnClickListener(new OnClickListener() {
         	public void onClick(View v) {
-        		players = 1;
-        		findViewById(R.id.peerselect).setVisibility(View.GONE);
-				gameCanvasView.startGame(MainActivity.this);
+        		CharSequence[] items = {"EASY", "MEDIUM", "HARD"};
+    			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+    			builder.setTitle("Select a difficulty:");
+    			builder.setItems(items, new DialogInterface.OnClickListener() {
+    			    public void onClick(DialogInterface dialog, int item) {
+    			    	players = 1;
+    			    	myAIDifficulty = item;
+    	        		findViewById(R.id.peerselect).setVisibility(View.GONE);
+    					gameCanvasView.startGame(MainActivity.this);
+    			    }
+    			});
+    			AlertDialog alert = builder.create();
+    			alert.show();
         	}
         });
         

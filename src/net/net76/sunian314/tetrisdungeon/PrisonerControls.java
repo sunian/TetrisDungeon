@@ -23,7 +23,7 @@ public class PrisonerControls extends GameControls {
 		TetrisPiece.createRotationOffsets();
 		createPrisonerPhysics();
 		createTicker();
-		createReadThread();
+		createTetrisControlThread();
 	}
 	private void setDownHere(MotionEvent event){
 		xDown = event.getX();
@@ -72,7 +72,7 @@ public class PrisonerControls extends GameControls {
 			
 		return true;
 	}
-	private void createPrisonerPhysics() {
+	void createPrisonerPhysics() {
 		prisonerPhysicsThread = new Thread(new Runnable() {
 			
 			@Override
@@ -121,7 +121,7 @@ public class PrisonerControls extends GameControls {
 		});
 		tetrisThread.start();
 	}
-	private void createReadThread(){
+	void createTetrisControlThread(){
 
         Thread readThread = new Thread(new Runnable() {
 			@Override

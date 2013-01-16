@@ -1,7 +1,9 @@
 package net.net76.sunian314.tetrisdungeon;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import android.R.bool;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -14,6 +16,7 @@ public class TetrisGrid {
 	private boolean[][] horizWalls = new boolean[20][10];
 	private boolean[][] platforms = new boolean[20][10];
 	TetrisPiece currentPiece;
+	int blastLineRow = 0;
 	boolean complete = false;
 	ArrayList<TetrisBlock> fallingBlocks = new ArrayList<TetrisBlock>();
 	Bitmap bmapWalls;
@@ -71,7 +74,6 @@ public class TetrisGrid {
 		return row < 19 ? horizWalls[row + 1][col] : true;
 	}
 	void addWall(int row, int col, int side){
-		if (side < 1) return;
 		switch (side) {
 		case 1:
 			if (col < 1) return;
@@ -89,6 +91,19 @@ public class TetrisGrid {
 			break;
 		default:
 			break;
+		}
+		for (int i = 19; i > blastLineRow; i--) {
+			boolean completeWall = true;
+			for (int j = 0; j < 10; j++) {
+				if (!horizWalls[i][j]){
+					completeWall = false;
+					break;
+				}
+			}
+			if (completeWall){
+				blastLineRow = i;
+				break;
+			}
 		}
 	}
 	void addWall(TetrisBlock block){
@@ -128,21 +143,22 @@ public class TetrisGrid {
 				currentPiece.settle();
 				currentPiece = null;
 				TetrisPiece.transmitNULL();
-				eliminateRows();
-				MainActivity.tetrisGridView.postInvalidate();
 			} else {
 				currentPiece.transmit();
 			}
 		}
-		for (TetrisBlock block : fallingBlocks){
+		for (int i = fallingBlocks.size() - 1; i >= 0; i--) {
+			TetrisBlock block = fallingBlocks.get(i);
 			if (spotIsEmtpy(block.row - 1, block.col)) {
 				block.fall(1);
-				MainActivity.tetrisGridView.postInvalidate();
+//				MainActivity.tetrisGridView.postInvalidate();
 			} else {
 				block.stationary = true;
 				fallingBlocks.remove(block);
 			}
 		}
+		eliminateRows();
+		MainActivity.tetrisGridView.postInvalidate();
 		if (currentPiece == null) {
 			return 1;
 		} else {
